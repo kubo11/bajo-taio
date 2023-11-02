@@ -28,8 +28,10 @@ void load_graph_from_file(Graph* graph, const char* path) {
 
   fscanf(file, "%d", &vertices);
   CHECK(ferror(file));
+  ASSERT(vertices > 0, "number of vertices should be greater than 0");
   fscanf(file, "%d", &edges);
   CHECK(ferror(file));
+  ASSERT(edges >= 0, "number of edges should be greater or equal than 0");
 
   initialize_graph(graph, vertices, edges);
 
@@ -48,9 +50,11 @@ void load_graph_from_console(Graph* graph) {
   printf("Number of vertices: ");
   scanf("%d", &vertices);
   CHECK(ferror(stdin));
+  ASSERT(vertices > 0, "number of vertices should be greater than 0");
   printf("Number of edges: ");
   scanf("%d", &edges);
   CHECK(ferror(stdin));
+  ASSERT(edges >= 0, "number of edges should be greater or equal than 0");
   printf("List of edges:"ENDLINE);
 
   initialize_graph(graph, vertices, edges);

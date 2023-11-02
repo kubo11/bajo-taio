@@ -12,3 +12,12 @@ Usage:
 ```
 ./bajo-taio [path]
 ```
+
+## Data
+
+Program accepts data in the following format:
+- 1st line - number of vertices (n)
+- 2nd line - number of edges (m)
+- next m lines - pairs of vertex numbers separated by space, representing an edge
+
+Data is stored in an adjacency matrix. Vertices are numbered from 1 to n. The size of matrix is n+1 by n+1 (cells for 0 are empty).

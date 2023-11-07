@@ -15,22 +15,24 @@ typedef struct GraphSize {
   uint32_t vertices_plus_edges;
 } GraphSize;
 
-void initialize_graph(Graph* graph, int vertices, int edges);
+void initialize_graph(Graph *graph, int vertices, int edges);
 
-void load_graph_from_file(Graph* graph, const char* path);
+void set_graphs_number_from_console(int *graphs_number);
 
-void load_graph_from_console(Graph* graph);
+void load_graphs_from_file(Graph *first_graph, Graph *second_graph, const char *first_path, const char *second_path);
 
-void destroy_graph(Graph* graph);
+void load_graphs_from_console(Graph *first_graph, Graph *second_graph, int graphs_number);
 
-void add_edge(Graph* graph, uint32_t beg, uint32_t end);
+void destroy_graph(Graph *graph);
 
-void remove_edge(Graph* graph, uint32_t beg, uint32_t end);
+void add_edge(Graph *graph, uint32_t beg, uint32_t end);
 
-GraphSize get_graph_size(const Graph* graph);
+void remove_edge(Graph *graph, uint32_t beg, uint32_t end);
+
+GraphSize get_graph_size(const Graph *graph);
 
 uint8_t graph_size_cmp(const GraphSize graphSize1, const GraphSize graphSize2);
 
-uint8_t graph_cmp(const Graph* graph1, const Graph* graph2);
+uint8_t graph_cmp(const Graph *graph1, const Graph *graph2);
 
 #endif // BAJO_TAIO_GRAPH_H

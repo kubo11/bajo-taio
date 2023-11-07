@@ -7,22 +7,31 @@
 
 #define USAGE "Usage:"ENDLINE"\tbajo-taio [path]"
 
-int main(int argc, char **argv) {
-  ASSERT(argc == 1 || argc == 2, "Wrong number of arguments. "USAGE);
+void show_graph(Graph graph, int number);
 
-  Graph graph;
+int main(int argc, char **argv) {
+  ASSERT(argc == 1 || argc == 2 || argc == 3, "Wrong number of arguments. "USAGE);
+
+  int graphs_number;
+  Graph first_graph, second_graph;
   if (argc == 1) {
-    load_graph_from_console(&graph);
+    set_graphs_number_from_console(&graphs_number);
+    load_graphs_from_console(&first_graph, &second_graph, graphs_number);
   }
   else {
-    load_graph_from_file(&graph, argv[1]);
+    load_graphs_from_file(&first_graph, &second_graph, argv[1], argv[2]);
   }
 
-  GraphSize graphSize = get_graph_size(&graph);
+  show_graph(first_graph, 1);
+  if (graphs_number == 2 || argc == 3){
+    show_graph(second_graph, 2);
+  }
   
-  printf("Graph size: (%d, %d)"ENDLINE, graphSize.vertices_plus_unique_edges, graphSize.vertices_plus_edges);
-
-  destroy_graph(&graph);
-
   return EXIT_SUCCESS;
+}
+
+void show_graph(Graph graph, int number) {
+  GraphSize graph_size = get_graph_size(&graph);
+  printf("%d. graph size: (%d, %d)" ENDLINE, number, graph_size.vertices_plus_unique_edges, graph_size.vertices_plus_edges);
+  destroy_graph(&graph);
 }

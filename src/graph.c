@@ -19,50 +19,67 @@ void initialize_graph(Graph* graph, int vertices, int edges) {
   }
 }
 
-void load_graph_from_file(Graph* graph, const char* path) {
-  ASSERT(graph != NULL, "graph is NULL");
-  FILE* file;
-  ASSERT(NULL != (file = fopen(path, "r")), "file doesn\'t exist");
+void set_graphs_number_from_console(int* graphs_number) {
+  printf("Number of graphs: ");
+  scanf("%d", graphs_number);
+  CHECK(ferror(stdin));
+  ASSERT(*graphs_number == 1 || *graphs_number == 2, "Number of graphs should be equal to 1 or 2");
+}
 
-  int vertices, edges, beg, end;
+void load_graphs_from_file(Graph *first_graph, Graph *second_graph, const char *first_path, const char *second_path)
+{
+  int graphs_number = second_path == NULL ? 1 : 2;
 
-  fscanf(file, "%d", &vertices);
-  CHECK(ferror(file));
-  ASSERT(vertices > 0, "number of vertices should be greater than 0");
-  fscanf(file, "%d", &edges);
-  CHECK(ferror(file));
-  ASSERT(edges >= 0, "number of edges should be greater or equal than 0");
+  for (int i = 0; i < graphs_number; ++i){
+    ASSERT((i == 0 ? first_graph : second_graph) != NULL, "graph is NULL");
+    FILE *file;
+    ASSERT(NULL != (file = fopen(i == 0 ? first_path : second_path, "r")), "file doesn\'t exist");
 
-  initialize_graph(graph, vertices, edges);
+    int vertices, edges, beg, end;
 
-  for (int i = 0; i < edges; ++i) {
-    fscanf(file, "%d %d", &beg, &end);
+    fscanf(file, "%d", &vertices);
     CHECK(ferror(file));
-    add_edge(graph, beg, end);
+    ASSERT(vertices > 0, "number of vertices should be greater than 0");
+    fscanf(file, "%d", &edges);
+    CHECK(ferror(file));
+    ASSERT(edges >= 0, "number of edges should be greater or equal than 0");
+
+    initialize_graph(i == 0 ? first_graph : second_graph, vertices, edges);
+
+    for (int j = 0; j < edges; ++j)
+    {
+      fscanf(file, "%d %d", &beg, &end);
+      CHECK(ferror(file));
+      add_edge(i == 0 ? first_graph : second_graph, beg, end);
+    }
   }
 }
 
-void load_graph_from_console(Graph* graph) {
-  ASSERT(graph != NULL, "graph is NULL");
+void load_graphs_from_console(Graph* first_graph, Graph* second_graph, int graphs_number) {
+  ASSERT(first_graph != NULL, "graph is NULL");
 
   int vertices, edges, beg, end;
 
-  printf("Number of vertices: ");
-  scanf("%d", &vertices);
-  CHECK(ferror(stdin));
-  ASSERT(vertices > 0, "number of vertices should be greater than 0");
-  printf("Number of edges: ");
-  scanf("%d", &edges);
-  CHECK(ferror(stdin));
-  ASSERT(edges >= 0, "number of edges should be greater or equal than 0");
-  printf("List of edges:"ENDLINE);
-
-  initialize_graph(graph, vertices, edges);
-
-  for (int i = 0; i < edges; ++i) {
-    scanf("%d %d", &beg, &end);
+  for (int i = 0; i < graphs_number; ++i)
+  {
+    printf("Number of vertices in %d. graph: ", i+1);
+    scanf("%d", &vertices);
     CHECK(ferror(stdin));
-    add_edge(graph, beg, end);
+    ASSERT(vertices > 0, "number of vertices should be greater than 0");
+    printf("Number of edges in %d. graph: ", i+1);
+    scanf("%d", &edges);
+    CHECK(ferror(stdin));
+    ASSERT(edges >= 0, "number of edges should be greater or equal than 0");
+    printf("List of edges:" ENDLINE);
+
+    initialize_graph(i == 0 ? first_graph : second_graph, vertices, edges);
+
+    for (int j = 0; j < edges; ++j)
+    {
+      scanf("%d %d", &beg, &end);
+      CHECK(ferror(stdin));
+      add_edge(i == 0 ? first_graph : second_graph, beg, end);
+    }
   }
 }
 

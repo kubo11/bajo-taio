@@ -4,6 +4,7 @@
 #include "graph.h"
 #include "error_handling.h"
 #include "platform_specific.h"
+#include "maximal_common_subgraph.h"
 
 #define USAGE "Usage:"ENDLINE"\tbajo-taio [path]"
 
@@ -21,6 +22,19 @@ int main(int argc, char **argv) {
   else {
     load_graphs_from_file(&first_graph, &second_graph, argv[1], argv[2]);
   }
+
+  // Graph modular_product = create_modular_product(&first_graph, &second_graph);
+  // printf("MODULAR v %d \n", modular_product.vertices);
+  // printf("MODULAR e %d \n", modular_product.edges);
+
+  // for (int i = 1; i < modular_product.vertices + 1; i++)
+  // {
+  //   for (int j = 1; j < modular_product.vertices + 1; j++)
+  //   {
+  //     printf("%d \t", modular_product.adjacency_matrix[i][j]);
+  //   }
+  //   printf("\n");
+  // }
 
   show_graph(first_graph, 1);
   if (graphs_number == 2 || argc == 3){

@@ -50,13 +50,14 @@ void load_graphs_from_file(Graph *first_graph, Graph *second_graph, const char *
     {
       fscanf(file, "%d %d", &beg, &end);
       CHECK(ferror(file));
-      add_edge(i == 0 ? first_graph : second_graph, beg, end);
+      add_edge(i == 0 ? first_graph : second_graph, beg, end, 1);
     }
   }
 }
 
 void load_graphs_from_console(Graph* first_graph, Graph* second_graph, int graphs_number) {
-  ASSERT(first_graph != NULL, "graph is NULL");
+  ASSERT(first_graph != NULL, "First graph is NULL");
+  ASSERT(second_graph != NULL, "Second graph is NULL");
 
   int vertices, edges, beg, end;
 
@@ -78,7 +79,7 @@ void load_graphs_from_console(Graph* first_graph, Graph* second_graph, int graph
     {
       scanf("%d %d", &beg, &end);
       CHECK(ferror(stdin));
-      add_edge(i == 0 ? first_graph : second_graph, beg, end);
+      add_edge(i == 0 ? first_graph : second_graph, beg, end, 1);
     }
   }
 }
@@ -91,13 +92,14 @@ void destroy_graph(Graph* graph) {
   graph = NULL;
 }
 
-void add_edge(Graph* graph, uint32_t beg, uint32_t end) {
+void add_edge(Graph *graph, uint32_t beg, uint32_t end, uint32_t edge_number)
+{
   ASSERT(graph != NULL, "graph is NULL");
   ASSERT(1 <= beg && beg <= graph->vertices, "beg is out of range");
   ASSERT(1 <= end && end <= graph->vertices, "end is out of range");
   ASSERT(beg != end, "self-loops are not allowed");
   if (!graph->adjacency_matrix[beg][end] && !graph->adjacency_matrix[end][beg]) graph->unique_edges++;
-  graph->adjacency_matrix[beg][end]++;
+  graph->adjacency_matrix[beg][end] += edge_number;
 }
 
 void remove_edge(Graph* graph, uint32_t beg, uint32_t end) {
@@ -130,4 +132,8 @@ uint8_t graph_cmp(const Graph* graph1, const Graph* graph2) {
   GraphSize graphSize2 = get_graph_size(graph2);
 
   return graph_size_cmp(graphSize1, graphSize2);
+}
+
+int determine_edges_number(uint32_t **adjacency_matrix, int first_vertex, int second_vertex) {
+  return adjacency_matrix[first_vertex][second_vertex];
 }

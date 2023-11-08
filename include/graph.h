@@ -25,7 +25,7 @@ void load_graphs_from_console(Graph *first_graph, Graph *second_graph, int graph
 
 void destroy_graph(Graph *graph);
 
-void add_edge(Graph *graph, uint32_t beg, uint32_t end);
+void add_edge(Graph *graph, uint32_t beg, uint32_t end, uint32_t edgeNumber);
 
 void remove_edge(Graph *graph, uint32_t beg, uint32_t end);
 
@@ -34,5 +34,7 @@ GraphSize get_graph_size(const Graph *graph);
 uint8_t graph_size_cmp(const GraphSize graphSize1, const GraphSize graphSize2);
 
 uint8_t graph_cmp(const Graph *graph1, const Graph *graph2);
+
+int determine_edges_number(uint32_t **adjacency_matrix, int first_vertex, int second_vertex);
 
 #endif // BAJO_TAIO_GRAPH_H

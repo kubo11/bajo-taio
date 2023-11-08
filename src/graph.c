@@ -9,13 +9,28 @@ void initialize_graph(Graph* graph, int vertices, int edges) {
   graph->vertices = vertices;
   graph->edges = edges;
   graph->unique_edges = 0;
-  
+
   uint32_t *ptr = NULL;
   CHECK(NULL == (ptr = calloc(vertices + 1, sizeof(uint32_t*))));
   graph->adjacency_matrix = (uint32_t **)ptr;
   for (int i = 0; i < vertices + 1; ++i) {
     CHECK(NULL == (ptr = calloc(vertices + 1, sizeof(uint32_t))));
     graph->adjacency_matrix[i] = ptr;
+  }
+}
+
+void show_graph(const Graph *graph, const char* name) {
+  GraphSize graph_size = get_graph_size(graph);
+  printf("%s graph size: (%d, %d)" ENDLINE, name, graph_size.vertices_plus_unique_edges, graph_size.vertices_plus_edges);
+  printf("Adjacency matrix: \n");
+
+  for (int i = 1; i < graph -> vertices + 1; i++)
+  {
+    for (int j = 1; j < graph -> vertices + 1; j++)
+    {
+      printf("%d \t", graph -> adjacency_matrix[i][j]);
+    }
+    printf("\n");
   }
 }
 
@@ -134,6 +149,6 @@ uint8_t graph_cmp(const Graph* graph1, const Graph* graph2) {
   return graph_size_cmp(graphSize1, graphSize2);
 }
 
-int determine_edges_number(uint32_t **adjacency_matrix, int first_vertex, int second_vertex) {
+int determine_edges(uint32_t **adjacency_matrix, int first_vertex, int second_vertex) {
   return adjacency_matrix[first_vertex][second_vertex];
 }

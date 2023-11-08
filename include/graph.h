@@ -17,6 +17,8 @@ typedef struct GraphSize {
 
 void initialize_graph(Graph *graph, int vertices, int edges);
 
+void show_graph(const Graph *graph, const char *name);
+
 void set_graphs_number_from_console(int *graphs_number);
 
 void load_graphs_from_file(Graph *first_graph, Graph *second_graph, const char *first_path, const char *second_path);
@@ -35,6 +37,6 @@ uint8_t graph_size_cmp(const GraphSize graphSize1, const GraphSize graphSize2);
 
 uint8_t graph_cmp(const Graph *graph1, const Graph *graph2);
 
-int determine_edges_number(uint32_t **adjacency_matrix, int first_vertex, int second_vertex);
+int determine_edges(uint32_t **adjacency_matrix, int first_vertex, int second_vertex);
 
 #endif // BAJO_TAIO_GRAPH_H

@@ -7,6 +7,8 @@ typedef struct Graph {
   uint32_t vertices;
   uint32_t edges;
   uint32_t unique_edges;
+  uint32_t *out_degrees;
+  uint32_t *in_degrees;
   uint32_t **adjacency_matrix;
 } Graph;
 
@@ -38,5 +40,11 @@ uint8_t graph_size_cmp(const GraphSize graphSize1, const GraphSize graphSize2);
 uint8_t graph_cmp(const Graph *graph1, const Graph *graph2);
 
 int determine_edges(uint32_t **adjacency_matrix, int first_vertex, int second_vertex);
+
+uint32_t get_max_graph_degree(const Graph* graph);
+
+void get_graph_distribution(const Graph* graph, int32_t* distribution);
+
+float graph_distance(const Graph* graph1, const Graph* graph2);
 
 #endif // BAJO_TAIO_GRAPH_H

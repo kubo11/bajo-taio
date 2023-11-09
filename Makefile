@@ -12,6 +12,7 @@ OBJ = $(patsubst %,$(BUILDDIR)/%,$(_OBJ))
 
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
+	@mkdir -p $(BUILDDIR)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(BUILDDIR)/bajo-taio: $(OBJ)

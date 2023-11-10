@@ -7,7 +7,7 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-Graph create_modular_product(Graph* first_graph, Graph* second_graph) 
+Graph create_modular_product(Graph *first_graph, Graph *second_graph) 
 {
     int vertices = first_graph -> vertices * second_graph -> vertices;
     int edges = 0;
@@ -19,10 +19,10 @@ Graph create_modular_product(Graph* first_graph, Graph* second_graph)
 
     for (int i = 0; i < vertices; i++)
     {
-        determine_original_vertices(i, first_graph->vertices, second_graph->vertices, &first_graph_vertex_start, &second_graph_vertex_start);
+        determine_original_vertices(i, second_graph->vertices, &first_graph_vertex_start, &second_graph_vertex_start);
         for (int j = 0; j < vertices; j++)
         {
-            determine_original_vertices(j, first_graph->vertices, second_graph->vertices, &first_graph_vertex_end, &second_graph_vertex_end);
+            determine_original_vertices(j, second_graph->vertices, &first_graph_vertex_end, &second_graph_vertex_end);
             if (first_graph_vertex_start == first_graph_vertex_end || second_graph_vertex_start == second_graph_vertex_end) continue;
 
             int first_graph_edges = determine_edges(first_graph -> adjacency_matrix, first_graph_vertex_start, first_graph_vertex_end);
@@ -38,7 +38,7 @@ Graph create_modular_product(Graph* first_graph, Graph* second_graph)
     return modular_product;
 }
 
-void determine_original_vertices(int modular_product_vertex, int first_graph_vertices, int second_graph_vertices, int *first_graph_vertex, int *second_graph_vertex) 
+void determine_original_vertices(int modular_product_vertex, int second_graph_vertices, int *first_graph_vertex, int *second_graph_vertex) 
 {  
     *first_graph_vertex = modular_product_vertex / second_graph_vertices + 1;
     *second_graph_vertex = modular_product_vertex % second_graph_vertices + 1;

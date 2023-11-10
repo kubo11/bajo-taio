@@ -27,7 +27,7 @@ void load_graphs_from_console(Graph *first_graph, Graph *second_graph, int graph
 
 void destroy_graph(Graph *graph);
 
-void add_edge(Graph *graph, uint32_t beg, uint32_t end, uint32_t edgeNumber);
+void add_edge(Graph *graph, uint32_t beg, uint32_t end, uint32_t edges_count);
 
 void remove_edge(Graph *graph, uint32_t beg, uint32_t end);
 

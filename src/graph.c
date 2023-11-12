@@ -128,12 +128,12 @@ uint32_t get_max_graph_degree(const Graph* graph)
 {
   uint32_t max_degree = 0;
   for (uint32_t v = 1; v < graph->vertices + 1; ++v)
+  {
     if (graph->out_degrees[v] > max_degree)
       max_degree = graph->out_degrees[v];
-  for (uint32_t v = 1; v < graph->vertices + 1; ++v)
     if (graph->in_degrees[v] > max_degree)
       max_degree = graph->in_degrees[v];
-
+  }
   return max_degree;
 }
 
@@ -152,6 +152,9 @@ int32_t* get_graph_distribution(const Graph* graph)
 
 float graph_distance(const Graph* graph1, const Graph* graph2)
 {
+  ASSERT(graph1 != NULL, "graph1 is NULL");
+  ASSERT(graph2 != NULL, "graph2 is NULL");
+
   uint32_t size1 = (get_max_graph_degree(graph1) + 1) * 2;
   uint32_t size2 = (get_max_graph_degree(graph2) + 1) * 2;
 

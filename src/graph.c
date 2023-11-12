@@ -126,26 +126,24 @@ uint8_t graph_cmp(const Graph* graph1, const Graph* graph2) {
 
 uint32_t get_max_graph_degree(const Graph* graph)
 {
-  uint32_t out_max = 0;
+  uint32_t max_degree = 0;
   for (uint32_t v = 1; v < graph->vertices + 1; ++v)
-    if (graph->out_degrees[v] > out_max)
-      out_max = graph->out_degrees[v];
-
-  uint32_t in_max = 0;
+    if (graph->out_degrees[v] > max_degree)
+      max_degree = graph->out_degrees[v];
   for (uint32_t v = 1; v < graph->vertices + 1; ++v)
-    if (graph->in_degrees[v] > in_max)
-      in_max = graph->in_degrees[v];
+    if (graph->in_degrees[v] > max_degree)
+      max_degree = graph->in_degrees[v];
 
-  return in_max > out_max ? in_max : out_max;
+  return max_degree;
 }
 
 void get_graph_distribution(const Graph* graph, int32_t* distribution)
 {
   for (uint32_t v = 1; v < graph->vertices + 1; ++v)
+  {
     distribution[2 * graph->out_degrees[v]] += 1;
-
-  for (uint32_t v = 1; v < graph->vertices + 1; ++v)
     distribution[2 * graph->in_degrees[v] + 1]++;
+  }
 }
 
 float graph_distance(const Graph* graph1, const Graph* graph2)

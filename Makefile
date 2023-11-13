@@ -4,10 +4,10 @@ BUILDDIR=build
 CC=gcc
 CFLAGS=-I$(INCLDIR)
 
-_DEPS = graph.h platform_specific.h error_handling.h
+_DEPS = graph.h platform_specific.h error_handling.h maximal_common_subgraph.h
 DEPS = $(patsubst %,$(INCLDIR)/%,$(_DEPS))
 
-_OBJ = main.o graph.o 
+_OBJ = main.o graph.o maximal_common_subgraph.o
 OBJ = $(patsubst %,$(BUILDDIR)/%,$(_OBJ))
 
 

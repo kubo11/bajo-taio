@@ -2,12 +2,12 @@ INCLDIR=include
 SRCDIR=src
 BUILDDIR=build
 CC=gcc
-CFLAGS=-I$(INCLDIR)
+CFLAGS=-I$(INCLDIR) -g -Wall
 
-_DEPS = graph.h platform_specific.h error_handling.h maximal_common_subgraph.h
+_DEPS = graph.h platform_specific.h error_handling.h maximal_common_subgraph.h bitset.h
 DEPS = $(patsubst %,$(INCLDIR)/%,$(_DEPS))
 
-_OBJ = main.o graph.o maximal_common_subgraph.o
+_OBJ = main.o graph.o maximal_common_subgraph.o bitset.o
 OBJ = $(patsubst %,$(BUILDDIR)/%,$(_OBJ))
 
 

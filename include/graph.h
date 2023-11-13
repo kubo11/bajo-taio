@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "bitset.h"
+
 typedef struct Graph {
   uint32_t vertices;
   uint32_t edges;
@@ -47,16 +49,22 @@ int32_t* get_graph_distribution(const Graph* graph);
 
 float graph_distance(const Graph* graph1, const Graph* graph2);
 
-uint32_t get_max_graph_degree(const Graph* graph);
+void print_edges(Graph* graph);
 
-void get_graph_distribution(const Graph* graph, int32_t* distribution);
+uint32_t** get_list_of_plain_cliques(Graph* graph);
 
-float graph_distance(const Graph* graph1, const Graph* graph2);
+void BronKerbosch(Bitset* R, Bitset* P, Bitset* X, uint32_t vertices, Bitset** adjacency_matrix, Bitset** cliques, uint32_t* num_of_cliques);
 
-uint32_t get_max_graph_degree(const Graph* graph);
+Bitset** create_bitset_adjacency_matrix(Graph* graph);
 
-int32_t* get_graph_distribution(const Graph* graph);
+void destroy_bitset_adjacency_matrix(Bitset** bitset_adjacency_matrix, int vertices);
 
-float graph_distance(const Graph* graph1, const Graph* graph2);
+Graph* extract_clique(Graph* graph, Bitset* clique);
+
+uint32_t clique_get_max_p(Graph* clique);
+
+uint8_t p_clique_cmp(Graph* clique1, uint32_t clique1_size, uint32_t p1, Graph* clique2, uint32_t clique2_size, uint32_t p2);
+
+Graph* get_max_clique(Graph* graph);
 
 #endif // BAJO_TAIO_GRAPH_H

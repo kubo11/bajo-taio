@@ -32,6 +32,21 @@ int main(int argc, char **argv) {
     destroy_graph(&second_graph);
   }
 
+  GraphSize graphSize = get_graph_size(&first_graph);
+  
+  printf("Graph size: (%d, %d)"ENDLINE, graphSize.vertices_plus_unique_edges, graphSize.vertices_plus_edges);
+
+  Graph* clique = get_max_clique(&first_graph);
+
+  if (clique != NULL) {
+    printf("Clique for supplied graph:"ENDLINE);
+    print_edges(clique);
+    destroy_graph(clique);
+  }
+  else {
+    printf("No clique found."ENDLINE);
+  }
+
   destroy_graph(&first_graph);
   return EXIT_SUCCESS;
 }

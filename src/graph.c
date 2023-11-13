@@ -142,9 +142,9 @@ GraphSize get_graph_size(const Graph *graph) {
 }
 
 uint8_t graph_size_cmp(const GraphSize graphSize1, const GraphSize graphSize2) {
-  if (graphSize1.vertices_plus_unique_edges < graphSize2.vertices_plus_unique_edges) return -1;
+  if (graphSize1.vertices_plus_unique_edges > graphSize2.vertices_plus_unique_edges) return -1;
   if (graphSize1.vertices_plus_unique_edges < graphSize2.vertices_plus_unique_edges) return 1;
-  if (graphSize1.vertices_plus_edges < graphSize2.vertices_plus_edges) return -1;
+  if (graphSize1.vertices_plus_edges > graphSize2.vertices_plus_edges) return -1;
   if (graphSize1.vertices_plus_edges < graphSize2.vertices_plus_edges) return 1;
   return 0;
 }
@@ -221,4 +221,175 @@ float graph_distance(const Graph* graph1, const Graph* graph2)
   free(distribution1);
   free(distribution2);
   return sqrt(squares_sum);
+}
+
+void print_edges(Graph* graph) {
+  for (int v = 1; v <= graph->vertices; ++v) {
+    for (int u = 1; u <= graph->vertices; ++u) {
+      if (v == u || !graph->adjacency_matrix[v][u]) continue;
+      printf("%d -> %d: %d"ENDLINE, v, u, graph->adjacency_matrix[v][u]);
+    }
+  }
+}
+
+void BronKerbosch(Bitset* R, Bitset* P, Bitset* X, uint32_t vertices, Bitset** adjacency_matrix, Bitset** cliques, uint32_t* num_of_cliques) {
+  // report R as maximal clique
+  if (check_if_all_unset(P) && check_if_all_unset(X) && count_set_bits(R) >= 3) {
+    cliques[(*num_of_cliques)++] = copy_bitset(R);
+    return;
+  }
+
+  for (int v = 1; v <= vertices; ++v) {
+    // run for vertices set in P
+    if (!get_bit(P, v)) continue;
+  
+    // R ⋃ {v}
+    Bitset* newR = copy_bitset(R);
+    set_bit(newR, v);
+    // P ⋂ N(v)
+    Bitset* newP = bitset_intersection(P, adjacency_matrix[v]);
+    // X ⋂ N(v)
+    Bitset* newX = bitset_intersection(X, adjacency_matrix[v]);
+  
+    BronKerbosch(newR, newP, newX, vertices, adjacency_matrix, cliques, num_of_cliques);
+  
+    // destroy bitsets used in past calculations
+    destroy_bitset(newP);
+    destroy_bitset(newR);
+    destroy_bitset(newX);
+  
+    // P := P \ {v}
+    unset_bit(P, v);
+    // X := X ⋃ {v}
+    set_bit(X, v);
+  }
+}
+
+Bitset** construct_bitset_adjacency_matrix(Graph* graph) {
+  Bitset** bitset_adjacency_matrix = (Bitset**)calloc(graph->vertices + 1, sizeof(Bitset*));
+  for (int v = 1; v <= graph->vertices; ++v) {
+    bitset_adjacency_matrix[v] = create_bitset(graph->vertices);
+  }
+  for (int v = 1; v <= graph->vertices; ++v) {
+    for (int u = v + 1; u <= graph->vertices; ++u) {
+      if (graph->adjacency_matrix[v][u] && graph->adjacency_matrix[u][v]) {
+        set_bit(bitset_adjacency_matrix[v], u);
+        set_bit(bitset_adjacency_matrix[u], v);
+      }
+    }
+  }
+  return bitset_adjacency_matrix;
+}
+
+void destroy_bitset_adjacency_matrix(Bitset** bitset_adjacency_matrix, int vertices) {
+  for (int i = 1; i <= vertices; ++i) {
+    destroy_bitset(bitset_adjacency_matrix[i]);
+  }
+  free(bitset_adjacency_matrix);
+}
+
+Graph* extract_clique(Graph* graph, Bitset* clique) {
+  Graph* extracted_clique = (Graph*)calloc(1, sizeof(Graph));
+  initialize_graph(extracted_clique, graph->vertices, 0);
+  for (int v = 1; v <= graph->vertices; ++v) {
+    if (!get_bit(clique, v)) continue;
+    for (int u = v + 1; u <= graph->vertices; ++u) {
+      if (!get_bit(clique, u)) continue;
+      if (graph->adjacency_matrix[v][u]) {
+        extracted_clique->adjacency_matrix[v][u] = graph->adjacency_matrix[v][u];
+        extracted_clique->edges += graph->adjacency_matrix[v][u];
+      }
+      if (graph->adjacency_matrix[u][v]) {
+        extracted_clique->adjacency_matrix[u][v] = graph->adjacency_matrix[u][v];
+        extracted_clique->edges += graph->adjacency_matrix[u][v];
+      }
+      if (extracted_clique->adjacency_matrix[v][u] || extracted_clique->adjacency_matrix[u][v]) {
+        extracted_clique->unique_edges++;
+      }
+    }
+  }
+  return extracted_clique;
+}
+
+uint32_t clique_get_max_p(Graph* clique) {
+  uint32_t p = clique->vertices * clique->vertices;
+  for (int v = 1; v <= clique->vertices; ++v) {
+    for (int u = v + 1; u <= clique->vertices; ++u) {
+      if (!clique->adjacency_matrix[v][u] || !clique->adjacency_matrix[u][v]) continue;
+      p = fmin(p, fmin(clique->adjacency_matrix[v][u], clique->adjacency_matrix[u][v]));
+    }
+  }
+  return p;
+}
+
+uint8_t p_clique_cmp(Graph* clique1, uint32_t clique1_size, uint32_t p1, Graph* clique2, uint32_t clique2_size, uint32_t p2) {
+  if (clique1_size > clique2_size) return -1;
+  if (clique1_size < clique2_size) return 1;
+  if (p1 > p2) return -1;
+  if (p1 < p2) return 1;
+  return graph_cmp(clique1, clique2);
+}
+
+Graph* get_max_clique(Graph* graph) {
+  Bitset* R = create_bitset(graph->vertices + 1);
+  Bitset* P = create_bitset(graph->vertices + 1);
+  set_all_bits(P);
+  Bitset* X = create_bitset(graph->vertices + 1);
+  Bitset **bitset_adjacency_matrix = construct_bitset_adjacency_matrix(graph);
+  Bitset **cliques = (Bitset**)calloc(graph->vertices / 3 + 1, sizeof(Bitset*));
+  uint32_t num_of_cliques = 0;
+
+  BronKerbosch(R, P, X, graph->vertices, bitset_adjacency_matrix, cliques, &num_of_cliques);
+  destroy_bitset(R);
+  destroy_bitset(P);
+  destroy_bitset(X);
+  destroy_bitset_adjacency_matrix(bitset_adjacency_matrix, graph->vertices);
+
+  if (num_of_cliques == 0) {
+    free(cliques);
+    return NULL;
+  }
+
+  Graph **extracted_cliques = (Graph**)calloc(num_of_cliques, sizeof(Graph*));
+  uint32_t *clique_p = (uint32_t*)calloc(num_of_cliques, sizeof(uint32_t));
+  uint32_t *clique_sizes = (uint32_t*)calloc(num_of_cliques, sizeof(uint32_t));
+
+  for (int i = 0; i < num_of_cliques; ++i) {
+    extracted_cliques[i] = extract_clique(graph, cliques[i]);
+    clique_sizes[i] = count_set_bits(cliques[i]);
+    destroy_bitset(cliques[i]);
+    clique_p[i] = clique_get_max_p(extracted_cliques[i]);
+  }
+  free(cliques);
+
+  int max_clique_id = 0;
+
+  for (int i = 1; i < num_of_cliques; ++i) {
+    if (p_clique_cmp(extracted_cliques[max_clique_id], clique_sizes[max_clique_id], clique_p[max_clique_id],
+        extracted_cliques[i], clique_sizes[i], clique_p[i]) == 1) {
+      max_clique_id = i;
+    }
+  }
+
+  for (int i = 0; i < num_of_cliques; ++i) {
+    if (i == max_clique_id) continue;
+    destroy_graph(extracted_cliques[i]);
+  }
+
+  Graph* max_clique = (Graph*)calloc(1, sizeof(Graph));
+  memcpy(max_clique, extracted_cliques[max_clique_id], sizeof(Graph));
+  free(extracted_cliques[max_clique_id]);
+
+  for (int v = 1; v <= max_clique->vertices; ++v) {
+    for (int u = 1; u <= max_clique->vertices; ++u) {
+      if (max_clique->adjacency_matrix[v][u]) {
+        max_clique->adjacency_matrix[v][u] = clique_p[max_clique_id];
+      }
+    }
+  }
+
+  free(extracted_cliques);
+  free(clique_p);
+
+  return max_clique;
 }

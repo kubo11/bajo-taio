@@ -51,20 +51,20 @@ float graph_distance(const Graph* graph1, const Graph* graph2);
 
 void print_edges(Graph* graph);
 
-uint32_t** get_list_of_plain_cliques(Graph* graph);
+uint32_t** get_list_of_plain_cliques(Graph *graph);
 
-void BronKerbosch(Bitset* R, Bitset* P, Bitset* X, uint32_t vertices, Bitset** adjacency_matrix, Bitset** cliques, uint32_t* num_of_cliques);
+void BronKerbosch(Bitset *R, Bitset *P, Bitset *X, uint32_t vertices, Bitset **adjacency_matrix, Bitset **cliques, uint32_t *num_of_cliques);
 
-Bitset** create_bitset_adjacency_matrix(Graph* graph);
+Bitset** create_bitset_adjacency_matrix(Graph *graph);
 
-void destroy_bitset_adjacency_matrix(Bitset** bitset_adjacency_matrix, int vertices);
+void destroy_bitset_adjacency_matrix(Bitset **bitset_adjacency_matrix, int vertices);
 
-Graph* extract_clique(Graph* graph, Bitset* clique);
+Graph* extract_clique(Graph *graph, Bitset *clique);
 
-uint32_t clique_get_max_p(Graph* clique);
+uint32_t clique_get_max_p(Graph *clique);
 
-uint8_t p_clique_cmp(Graph* clique1, uint32_t clique1_size, uint32_t p1, Graph* clique2, uint32_t clique2_size, uint32_t p2);
+uint8_t p_clique_cmp(Graph *clique1, uint32_t clique1_size, uint32_t p1, Graph *clique2, uint32_t clique2_size, uint32_t p2);
 
-Graph* get_max_clique(Graph* graph);
+Graph* get_max_clique(Graph *graph);
 
 #endif // BAJO_TAIO_GRAPH_H

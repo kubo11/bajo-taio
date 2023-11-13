@@ -233,7 +233,7 @@ void print_edges(Graph* graph) {
   }
 }
 
-void BronKerbosch(Bitset* R, Bitset* P, Bitset* X, uint32_t vertices, Bitset** adjacency_matrix, Bitset** cliques, uint32_t* num_of_cliques) {
+void BronKerbosch(Bitset *R, Bitset *P, Bitset *X, uint32_t vertices, Bitset **adjacency_matrix, Bitset **cliques, uint32_t *num_of_cliques) {
   ASSERT(R != NULL, "R is NULL.");
   ASSERT(P != NULL, "P is NULL.");
   ASSERT(X != NULL, "X is NULL.");
@@ -251,12 +251,12 @@ void BronKerbosch(Bitset* R, Bitset* P, Bitset* X, uint32_t vertices, Bitset** a
     if (!get_bit(P, v)) continue;
   
     // R ⋃ {v}
-    Bitset* newR = copy_bitset(R);
+    Bitset *newR = copy_bitset(R);
     set_bit(newR, v);
     // P ⋂ N(v)
-    Bitset* newP = bitset_intersection(P, adjacency_matrix[v]);
+    Bitset *newP = bitset_intersection(P, adjacency_matrix[v]);
     // X ⋂ N(v)
-    Bitset* newX = bitset_intersection(X, adjacency_matrix[v]);
+    Bitset *newX = bitset_intersection(X, adjacency_matrix[v]);
   
     BronKerbosch(newR, newP, newX, vertices, adjacency_matrix, cliques, num_of_cliques);
   
@@ -272,9 +272,9 @@ void BronKerbosch(Bitset* R, Bitset* P, Bitset* X, uint32_t vertices, Bitset** a
   }
 }
 
-Bitset** construct_bitset_adjacency_matrix(Graph* graph) {
+Bitset** construct_bitset_adjacency_matrix(Graph *graph) {
   ASSERT(graph != NULL, "graph is NULL");
-  Bitset** bitset_adjacency_matrix = (Bitset**)calloc(graph->vertices + 1, sizeof(Bitset*));
+  Bitset **bitset_adjacency_matrix = (Bitset**)calloc(graph->vertices + 1, sizeof(Bitset*));
   for (int v = 1; v <= graph->vertices; ++v) {
     bitset_adjacency_matrix[v] = create_bitset(graph->vertices);
   }
@@ -296,10 +296,10 @@ void destroy_bitset_adjacency_matrix(Bitset** bitset_adjacency_matrix, int verti
   free(bitset_adjacency_matrix);
 }
 
-Graph* extract_clique(Graph* graph, Bitset* clique) {
+Graph* extract_clique(Graph *graph, Bitset *clique) {
   ASSERT(graph != NULL, "graph is NULL");
   ASSERT(graph != NULL, "clique is NULL");
-  Graph* extracted_clique = (Graph*)calloc(1, sizeof(Graph));
+  Graph *extracted_clique = (Graph*)calloc(1, sizeof(Graph));
   initialize_graph(extracted_clique, graph->vertices, 0);
   for (int v = 1; v <= graph->vertices; ++v) {
     if (!get_bit(clique, v)) continue;
@@ -321,7 +321,7 @@ Graph* extract_clique(Graph* graph, Bitset* clique) {
   return extracted_clique;
 }
 
-uint32_t clique_get_max_p(Graph* clique) {
+uint32_t clique_get_max_p(Graph *clique) {
   ASSERT(clique != NULL, "clique is NULL");
   uint32_t p = clique->vertices * clique->vertices;
   for (int v = 1; v <= clique->vertices; ++v) {
@@ -333,7 +333,7 @@ uint32_t clique_get_max_p(Graph* clique) {
   return p;
 }
 
-uint8_t p_clique_cmp(Graph* clique1, uint32_t clique1_size, uint32_t p1, Graph* clique2, uint32_t clique2_size, uint32_t p2) {
+uint8_t p_clique_cmp(Graph *clique1, uint32_t clique1_size, uint32_t p1, Graph *clique2, uint32_t clique2_size, uint32_t p2) {
   ASSERT(clique1 != NULL, "clique1 is NULL");
   ASSERT(clique2 != NULL, "clique2 is NULL");
   if (clique1_size > clique2_size) return -1;
@@ -343,12 +343,12 @@ uint8_t p_clique_cmp(Graph* clique1, uint32_t clique1_size, uint32_t p1, Graph* 
   return graph_cmp(clique1, clique2);
 }
 
-Graph* get_max_clique(Graph* graph) {
+Graph* get_max_clique(Graph *graph) {
   ASSERT(graph != NULL, "graph is NULL");
-  Bitset* R = create_bitset(graph->vertices + 1);
-  Bitset* P = create_bitset(graph->vertices + 1);
+  Bitset *R = create_bitset(graph->vertices + 1);
+  Bitset *P = create_bitset(graph->vertices + 1);
   set_all_bits(P);
-  Bitset* X = create_bitset(graph->vertices + 1);
+  Bitset *X = create_bitset(graph->vertices + 1);
   Bitset **bitset_adjacency_matrix = construct_bitset_adjacency_matrix(graph);
   Bitset **cliques = (Bitset**)calloc(graph->vertices / 3 + 1, sizeof(Bitset*));
   ASSERT(cliques != NULL, "Could not allocate memory for cliques.");
@@ -394,7 +394,7 @@ Graph* get_max_clique(Graph* graph) {
     destroy_graph(extracted_cliques[i]);
   }
 
-  Graph* max_clique = (Graph*)calloc(1, sizeof(Graph));
+  Graph *max_clique = (Graph*)calloc(1, sizeof(Graph));
   memcpy(max_clique, extracted_cliques[max_clique_id], sizeof(Graph));
   free(extracted_cliques[max_clique_id]);
 

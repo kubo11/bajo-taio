@@ -13,29 +13,29 @@ typedef uint8_t bool;
 typedef struct Bitset{
   size_t size;
   size_t data_length;
-  unsigned int* data;
+  unsigned int *data;
 } Bitset;
 
 Bitset* create_bitset(size_t size);
 
-void destroy_bitset(Bitset* bitset);
+void destroy_bitset(Bitset *bitset);
 
-void set_bit(Bitset* bitset, uint32_t bit);
+void set_bit(Bitset *bitset, uint32_t bit);
 
-void set_all_bits(Bitset* bitset);
+void set_all_bits(Bitset *bitset);
 
-void unset_bit(Bitset* bitset, uint32_t bit);
+void unset_bit(Bitset *bitset, uint32_t bit);
 
-void unset_all_bits(Bitset* bitset);
+void unset_all_bits(Bitset *bitset);
 
-bool get_bit(Bitset* bitset, uint32_t bit);
+bool get_bit(Bitset *bitset, uint32_t bit);
 
-bool check_if_all_unset(Bitset* bitset);
+bool check_if_all_unset(Bitset *bitset);
 
-Bitset* copy_bitset(Bitset* bitset);
+Bitset* copy_bitset(Bitset *bitset);
 
-Bitset* bitset_intersection(Bitset* bitset1, Bitset* bitset2);
+Bitset* bitset_intersection(Bitset *bitset1, Bitset *bitset2);
 
-uint32_t count_set_bits(Bitset* bitset);
+uint32_t count_set_bits(Bitset *bitset);
 
 #endif // BAJO_TAIO_BITSET_H

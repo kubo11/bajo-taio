@@ -224,6 +224,7 @@ float graph_distance(const Graph* graph1, const Graph* graph2)
 }
 
 void print_edges(Graph* graph) {
+  ASSERT(graph != NULL, "graph is NULL");
   for (int v = 1; v <= graph->vertices; ++v) {
     for (int u = 1; u <= graph->vertices; ++u) {
       if (v == u || !graph->adjacency_matrix[v][u]) continue;
@@ -233,6 +234,12 @@ void print_edges(Graph* graph) {
 }
 
 void BronKerbosch(Bitset* R, Bitset* P, Bitset* X, uint32_t vertices, Bitset** adjacency_matrix, Bitset** cliques, uint32_t* num_of_cliques) {
+  ASSERT(R != NULL, "R is NULL.");
+  ASSERT(P != NULL, "P is NULL.");
+  ASSERT(X != NULL, "X is NULL.");
+  ASSERT(adjacency_matrix != NULL, "adjacency_matrix is NULL.");
+  ASSERT(cliques != NULL, "cliques is NULL.");
+  ASSERT(num_of_cliques != NULL, "num_of_cliques is NULL.");
   // report R as maximal clique
   if (check_if_all_unset(P) && check_if_all_unset(X) && count_set_bits(R) >= 3) {
     cliques[(*num_of_cliques)++] = copy_bitset(R);
@@ -266,6 +273,7 @@ void BronKerbosch(Bitset* R, Bitset* P, Bitset* X, uint32_t vertices, Bitset** a
 }
 
 Bitset** construct_bitset_adjacency_matrix(Graph* graph) {
+  ASSERT(graph != NULL, "graph is NULL");
   Bitset** bitset_adjacency_matrix = (Bitset**)calloc(graph->vertices + 1, sizeof(Bitset*));
   for (int v = 1; v <= graph->vertices; ++v) {
     bitset_adjacency_matrix[v] = create_bitset(graph->vertices);
@@ -289,6 +297,8 @@ void destroy_bitset_adjacency_matrix(Bitset** bitset_adjacency_matrix, int verti
 }
 
 Graph* extract_clique(Graph* graph, Bitset* clique) {
+  ASSERT(graph != NULL, "graph is NULL");
+  ASSERT(graph != NULL, "clique is NULL");
   Graph* extracted_clique = (Graph*)calloc(1, sizeof(Graph));
   initialize_graph(extracted_clique, graph->vertices, 0);
   for (int v = 1; v <= graph->vertices; ++v) {
@@ -312,6 +322,7 @@ Graph* extract_clique(Graph* graph, Bitset* clique) {
 }
 
 uint32_t clique_get_max_p(Graph* clique) {
+  ASSERT(clique != NULL, "clique is NULL");
   uint32_t p = clique->vertices * clique->vertices;
   for (int v = 1; v <= clique->vertices; ++v) {
     for (int u = v + 1; u <= clique->vertices; ++u) {
@@ -323,6 +334,8 @@ uint32_t clique_get_max_p(Graph* clique) {
 }
 
 uint8_t p_clique_cmp(Graph* clique1, uint32_t clique1_size, uint32_t p1, Graph* clique2, uint32_t clique2_size, uint32_t p2) {
+  ASSERT(clique1 != NULL, "clique1 is NULL");
+  ASSERT(clique2 != NULL, "clique2 is NULL");
   if (clique1_size > clique2_size) return -1;
   if (clique1_size < clique2_size) return 1;
   if (p1 > p2) return -1;
@@ -331,12 +344,14 @@ uint8_t p_clique_cmp(Graph* clique1, uint32_t clique1_size, uint32_t p1, Graph* 
 }
 
 Graph* get_max_clique(Graph* graph) {
+  ASSERT(graph != NULL, "graph is NULL");
   Bitset* R = create_bitset(graph->vertices + 1);
   Bitset* P = create_bitset(graph->vertices + 1);
   set_all_bits(P);
   Bitset* X = create_bitset(graph->vertices + 1);
   Bitset **bitset_adjacency_matrix = construct_bitset_adjacency_matrix(graph);
   Bitset **cliques = (Bitset**)calloc(graph->vertices / 3 + 1, sizeof(Bitset*));
+  ASSERT(cliques != NULL, "Could not allocate memory for cliques.");
   uint32_t num_of_cliques = 0;
 
   BronKerbosch(R, P, X, graph->vertices, bitset_adjacency_matrix, cliques, &num_of_cliques);
@@ -351,8 +366,11 @@ Graph* get_max_clique(Graph* graph) {
   }
 
   Graph **extracted_cliques = (Graph**)calloc(num_of_cliques, sizeof(Graph*));
+  ASSERT(extracted_cliques != NULL, "Could not allocate memory for extracted_cliques.");
   uint32_t *clique_p = (uint32_t*)calloc(num_of_cliques, sizeof(uint32_t));
+  ASSERT(clique_p != NULL, "Could not allocate memory for clique_p.");
   uint32_t *clique_sizes = (uint32_t*)calloc(num_of_cliques, sizeof(uint32_t));
+  ASSERT(clique_sizes != NULL, "Could not allocate memory for clique_sizes.");
 
   for (int i = 0; i < num_of_cliques; ++i) {
     extracted_cliques[i] = extract_clique(graph, cliques[i]);
@@ -365,8 +383,8 @@ Graph* get_max_clique(Graph* graph) {
   int max_clique_id = 0;
 
   for (int i = 1; i < num_of_cliques; ++i) {
-    if (p_clique_cmp(extracted_cliques[max_clique_id], clique_sizes[max_clique_id], clique_p[max_clique_id],
-        extracted_cliques[i], clique_sizes[i], clique_p[i]) == 1) {
+    if (p_clique_cmp(extracted_cliques[max_clique_id], clique_sizes[max_clique_id],
+      clique_p[max_clique_id], extracted_cliques[i], clique_sizes[i], clique_p[i]) == 1) {
       max_clique_id = i;
     }
   }

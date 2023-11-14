@@ -53,4 +53,10 @@ void get_graph_distribution(const Graph* graph, int32_t* distribution);
 
 float graph_distance(const Graph* graph1, const Graph* graph2);
 
+uint32_t get_max_graph_degree(const Graph* graph);
+
+int32_t* get_graph_distribution(const Graph* graph);
+
+float graph_distance(const Graph* graph1, const Graph* graph2);
+
 #endif // BAJO_TAIO_GRAPH_H

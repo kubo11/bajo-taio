@@ -2,7 +2,7 @@ INCLDIR=include
 SRCDIR=src
 BUILDDIR=build
 CC=gcc
-CFLAGS=-I$(INCLDIR) -g -Wall
+CFLAGS=-I$(INCLDIR) -g -Wall -lm
 
 _DEPS = graph.h platform_specific.h error_handling.h maximal_common_subgraph.h bitset.h
 DEPS = $(patsubst %,$(INCLDIR)/%,$(_DEPS))

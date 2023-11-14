@@ -13,7 +13,7 @@ Bitset* create_bitset(size_t size) {
   Bitset *bitset = (Bitset*)calloc(1, sizeof(Bitset));
   ASSERT(bitset != NULL, "Could not allocate space for bitset.");
   bitset->size = size;
-  bitset->data_length = (size - 1) / __CHAR_BIT__ + 1;
+  bitset->data_length = (size - 1) / __CHAR_BIT__ * sizeof(unsigned int) + 1;
   bitset->data = (unsigned int*)calloc(bitset->data_length, sizeof(unsigned int));
   ASSERT(bitset->data != NULL, "Could not allocate space for bitset data.");
   return bitset;

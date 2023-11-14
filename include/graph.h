@@ -45,7 +45,7 @@ int determine_edges(uint32_t **adjacency_matrix, int first_vertex, int second_ve
 
 uint32_t get_max_graph_degree(const Graph* graph);
 
-int32_t* get_graph_distribution(const Graph* graph);
+uint32_t* get_graph_distribution(const Graph* graph);
 
 float graph_distance(const Graph* graph1, const Graph* graph2);
 

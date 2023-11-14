@@ -175,11 +175,11 @@ uint32_t get_max_graph_degree(const Graph* graph)
   return max_degree;
 }
 
-int32_t* get_graph_distribution(const Graph* graph)
+uint32_t* get_graph_distribution(const Graph* graph)
 {
   uint32_t size = (get_max_graph_degree(graph) + 1) * 2;
-  int32_t* distribution = NULL;
-  CHECK(NULL == (distribution = calloc(size, sizeof(int32_t))));
+  uint32_t* distribution = NULL;
+  CHECK(NULL == (distribution = calloc(size, sizeof(uint32_t))));
   for (uint32_t v = 1; v < graph->vertices + 1; ++v)
   {
     distribution[2 * graph->out_degrees[v]] += 1;
@@ -193,8 +193,8 @@ float graph_distance(const Graph* graph1, const Graph* graph2)
   uint32_t size1 = (get_max_graph_degree(graph1) + 1) * 2;
   uint32_t size2 = (get_max_graph_degree(graph2) + 1) * 2;
 
-  int32_t* distribution1 = get_graph_distribution(graph1);
-  int32_t* distribution2 = get_graph_distribution(graph2);
+  uint32_t* distribution1 = get_graph_distribution(graph1);
+  uint32_t* distribution2 = get_graph_distribution(graph2);
 
   uint32_t min_size, max_size, *longer_distribution;
   if (size1 < size2)

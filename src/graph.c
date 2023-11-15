@@ -243,7 +243,7 @@ void store_clique(Bitset *clique, Bitset **cliques, uint32_t *num_of_cliques) {
   if (count_set_bits(cliques[0]) < count_set_bits(clique)) {
     while(*num_of_cliques > 0) {
       destroy_bitset(cliques[*num_of_cliques-1]);
-      cliques[*num_of_cliques-1] = NULL;
+      cliques[--(*num_of_cliques)] = NULL;
     }
     cliques[(*num_of_cliques)++] = copy_bitset(clique);
   }

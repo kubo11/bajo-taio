@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define CLIQUES_BUFFER_SIZE 1000000
+
 void initialize_graph(Graph *graph, int vertices, int edges) {
   graph->vertices = vertices;
   graph->edges = edges;
@@ -233,6 +235,20 @@ void print_edges(Graph* graph) {
   }
 }
 
+void store_clique(Bitset *clique, Bitset **cliques, uint32_t *num_of_cliques) {
+  if (*num_of_cliques == 0 || count_set_bits(cliques[0]) == count_set_bits(clique)) {
+    cliques[(*num_of_cliques)++] = copy_bitset(clique);
+    return;
+  }
+  if (count_set_bits(cliques[0]) < count_set_bits(clique)) {
+    while(*num_of_cliques > 0) {
+      destroy_bitset(cliques[*num_of_cliques-1]);
+      cliques[*num_of_cliques-1] = NULL;
+    }
+    cliques[(*num_of_cliques)++] = copy_bitset(clique);
+  }
+}
+
 void BronKerbosch(Bitset *R, Bitset *P, Bitset *X, uint32_t vertices, Bitset **adjacency_matrix, Bitset **cliques, uint32_t *num_of_cliques) {
   ASSERT(R != NULL, "R is NULL.");
   ASSERT(P != NULL, "P is NULL.");
@@ -241,9 +257,8 @@ void BronKerbosch(Bitset *R, Bitset *P, Bitset *X, uint32_t vertices, Bitset **a
   ASSERT(cliques != NULL, "cliques is NULL.");
   ASSERT(num_of_cliques != NULL, "num_of_cliques is NULL.");
   // report R as maximal clique
-  if (check_if_all_unset(P) && check_if_all_unset(X) && count_set_bits(R) >= 3) {
-    cliques[(*num_of_cliques)++] = copy_bitset(R);
-    return;
+  if (check_if_all_unset(P) && check_if_all_unset(X) && count_set_bits(R) >= 1) {
+    store_clique(R, cliques, num_of_cliques);
   }
 
   for (int v = 1; v <= vertices; ++v) {
@@ -276,7 +291,7 @@ Bitset** construct_bitset_adjacency_matrix(Graph *graph) {
   ASSERT(graph != NULL, "graph is NULL");
   Bitset **bitset_adjacency_matrix = (Bitset**)calloc(graph->vertices + 1, sizeof(Bitset*));
   for (int v = 1; v <= graph->vertices; ++v) {
-    bitset_adjacency_matrix[v] = create_bitset(graph->vertices);
+    bitset_adjacency_matrix[v] = create_bitset(graph->vertices + 1);
   }
   for (int v = 1; v <= graph->vertices; ++v) {
     for (int u = v + 1; u <= graph->vertices; ++u) {
@@ -350,7 +365,7 @@ Graph* get_max_clique(Graph *graph) {
   set_all_bits(P);
   Bitset *X = create_bitset(graph->vertices + 1);
   Bitset **bitset_adjacency_matrix = construct_bitset_adjacency_matrix(graph);
-  Bitset **cliques = (Bitset**)calloc(graph->vertices / 3 + 1, sizeof(Bitset*));
+  Bitset **cliques = (Bitset**)calloc(CLIQUES_BUFFER_SIZE, sizeof(Bitset*));
   ASSERT(cliques != NULL, "Could not allocate memory for cliques.");
   uint32_t num_of_cliques = 0;
 

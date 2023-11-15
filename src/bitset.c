@@ -1,7 +1,6 @@
 #include "bitset.h"
 #include "error_handling.h"
 
-#include <limits.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +12,7 @@ Bitset* create_bitset(size_t size) {
   Bitset *bitset = (Bitset*)calloc(1, sizeof(Bitset));
   ASSERT(bitset != NULL, "Could not allocate space for bitset.");
   bitset->size = size;
-  bitset->data_length = (size - 1) / __CHAR_BIT__ * sizeof(unsigned int) + 1;
+  bitset->data_length = (size - 1) / WORD_BITS + 1;
   bitset->data = (unsigned int*)calloc(bitset->data_length, sizeof(unsigned int));
   ASSERT(bitset->data != NULL, "Could not allocate space for bitset data.");
   return bitset;
@@ -29,13 +28,13 @@ void set_bit(Bitset *bitset, uint32_t bit) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
   ASSERT(bit >= 0, "Bit index too low.");
   ASSERT(bit >= 0, "Bit index too high.");
-  bitset->data[bit / __CHAR_BIT__] |= (1 << (bit % WORD_BITS));
+  bitset->data[bit / WORD_BITS] |= (1 << (bit % WORD_BITS));
 }
 
 void set_all_bits(Bitset *bitset) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
-  for (int i = 0; i < bitset->data_length; ++i) {
-    bitset->data[i] = UINT_MAX;
+  for (int i = 1; i < bitset->size; ++i) {
+    set_bit(bitset, i);
   }
 }
 
@@ -43,9 +42,9 @@ void unset_bit(Bitset *bitset, uint32_t bit) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
   ASSERT(bit >= 0, "Bit index too low.");
   ASSERT(bit >= 0, "Bit index too high.");
-  bitset->data[bit / __CHAR_BIT__] = ~bitset->data[bit / __CHAR_BIT__];
-  bitset->data[bit / __CHAR_BIT__] |= (1 << (bit % WORD_BITS));
-  bitset->data[bit / __CHAR_BIT__] = ~bitset->data[bit / __CHAR_BIT__];
+  bitset->data[bit / WORD_BITS] = ~bitset->data[bit / WORD_BITS];
+  bitset->data[bit / WORD_BITS] |= (1 << (bit % WORD_BITS));
+  bitset->data[bit / WORD_BITS] = ~bitset->data[bit / WORD_BITS];
 }
 
 void unset_all_bits(Bitset *bitset) {
@@ -59,15 +58,15 @@ bool get_bit(Bitset *bitset, uint32_t bit) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
   ASSERT(bit >= 0, "Bit index too low.");
   ASSERT(bit >= 0, "Bit index too high.");
-  if (bitset->data[bit / __CHAR_BIT__] & (1 << (bit % WORD_BITS)))
+  if (bitset->data[bit / WORD_BITS] & (1 << (bit % WORD_BITS)))
     return true;
   return false;
 }
 
 bool check_if_all_unset(Bitset *bitset) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
-  for (int i = 0; i < bitset->data_length; ++i) {
-    if (bitset->data[i]) {
+  for (int i = 1; i < bitset->size; ++i) {
+    if (get_bit(bitset, i)) {
       return false;
     }
   }
@@ -77,7 +76,9 @@ bool check_if_all_unset(Bitset *bitset) {
 Bitset* copy_bitset(Bitset *bitset) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
   Bitset *copy = create_bitset(bitset->size);
-  memcpy(copy->data, bitset->data, bitset->data_length * sizeof(unsigned int));
+  for (int i = 0; i < bitset->data_length; ++i) {
+    copy->data[i] = bitset->data[i];
+  }
   return copy;
 }
 
@@ -87,8 +88,10 @@ Bitset* bitset_intersection(Bitset *bitset1, Bitset *bitset2) {
   size_t size = fmin(bitset1->size, bitset2->size);
   Bitset *intersection = create_bitset(size);
 
-  for (int i = 0; i < intersection->data_length; ++i) {
-    intersection->data[i] = bitset1->data[i] & bitset2->data[i];
+  for (int i = 1; i < intersection->size; ++i) {
+    if (get_bit(bitset1, i) && get_bit(bitset2, i)) {
+      set_bit(intersection, i);
+    }
   }
 
   return intersection;
@@ -97,7 +100,7 @@ Bitset* bitset_intersection(Bitset *bitset1, Bitset *bitset2) {
 uint32_t count_set_bits(Bitset *bitset) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
   uint32_t count = 0;
-  for (int i = 0; i < bitset->size; ++i) {
+  for (int i = 1; i < bitset->size; ++i) {
     if (get_bit(bitset, i)) {
       count++;
     }

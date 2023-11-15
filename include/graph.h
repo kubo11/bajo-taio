@@ -53,6 +53,8 @@ void print_edges(Graph* graph);
 
 uint32_t** get_list_of_plain_cliques(Graph *graph);
 
+void store_clique(Bitset *clique, Bitset **cliques, uint32_t *num_of_cliques);
+
 void BronKerbosch(Bitset *R, Bitset *P, Bitset *X, uint32_t vertices, Bitset **adjacency_matrix, Bitset **cliques, uint32_t *num_of_cliques);
 
 Bitset** create_bitset_adjacency_matrix(Graph *graph);

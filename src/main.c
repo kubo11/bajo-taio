@@ -28,23 +28,35 @@ int main(int argc, char **argv) {
     Graph modular_product = create_modular_product(&first_graph, &second_graph);
     show_graph(&modular_product, "Modular product");
 
+    Graph* clique = get_max_clique(&modular_product);
+
+    if (clique != NULL) {
+      printf("Clique for supplied graph:"ENDLINE);
+      print_edges(clique);
+      destroy_graph(clique);
+    }
+    else {
+      printf("No clique found."ENDLINE);
+    }
+
     destroy_graph(&modular_product);
     destroy_graph(&second_graph);
   }
-
-  GraphSize graphSize = get_graph_size(&first_graph);
-  
-  printf("Graph size: (%d, %d)"ENDLINE, graphSize.vertices_plus_unique_edges, graphSize.vertices_plus_edges);
-
-  Graph* clique = get_max_clique(&first_graph);
-
-  if (clique != NULL) {
-    printf("Clique for supplied graph:"ENDLINE);
-    print_edges(clique);
-    destroy_graph(clique);
-  }
   else {
-    printf("No clique found."ENDLINE);
+    GraphSize graphSize = get_graph_size(&first_graph);
+    
+    printf("Graph size: (%d, %d)"ENDLINE, graphSize.vertices_plus_unique_edges, graphSize.vertices_plus_edges);
+
+    Graph* clique = get_max_clique(&first_graph);
+
+    if (clique != NULL) {
+      printf("Clique for supplied graph:"ENDLINE);
+      print_edges(clique);
+      destroy_graph(clique);
+    }
+    else {
+      printf("No clique found."ENDLINE);
+    }
   }
 
   destroy_graph(&first_graph);

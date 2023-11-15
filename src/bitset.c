@@ -27,7 +27,7 @@ void destroy_bitset(Bitset *bitset) {
 void set_bit(Bitset *bitset, uint32_t bit) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
   ASSERT(bit >= 0, "Bit index too low.");
-  ASSERT(bit >= 0, "Bit index too high.");
+  ASSERT(bit < bitset->size, "Bit index too high.");
   bitset->data[bit / WORD_BITS] |= (1 << (bit % WORD_BITS));
 }
 
@@ -41,7 +41,7 @@ void set_all_bits(Bitset *bitset) {
 void unset_bit(Bitset *bitset, uint32_t bit) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
   ASSERT(bit >= 0, "Bit index too low.");
-  ASSERT(bit >= 0, "Bit index too high.");
+  ASSERT(bit < bitset->size, "Bit index too high.");
   bitset->data[bit / WORD_BITS] = ~bitset->data[bit / WORD_BITS];
   bitset->data[bit / WORD_BITS] |= (1 << (bit % WORD_BITS));
   bitset->data[bit / WORD_BITS] = ~bitset->data[bit / WORD_BITS];
@@ -57,7 +57,7 @@ void unset_all_bits(Bitset *bitset) {
 bool get_bit(Bitset *bitset, uint32_t bit) {
   ASSERT(bitset != NULL, "Bitset is NULL.");
   ASSERT(bit >= 0, "Bit index too low.");
-  ASSERT(bit >= 0, "Bit index too high.");
+  ASSERT(bit < bitset->size, "Bit index too high.");
   if (bitset->data[bit / WORD_BITS] & (1 << (bit % WORD_BITS)))
     return true;
   return false;

@@ -348,11 +348,9 @@ uint32_t clique_get_max_p(Graph *clique) {
   return p;
 }
 
-uint8_t p_clique_cmp(Graph *clique1, uint32_t clique1_size, uint32_t p1, Graph *clique2, uint32_t clique2_size, uint32_t p2) {
+uint8_t p_clique_cmp(Graph *clique1, uint32_t p1, Graph *clique2, uint32_t p2) {
   ASSERT(clique1 != NULL, "clique1 is NULL");
   ASSERT(clique2 != NULL, "clique2 is NULL");
-  if (clique1_size > clique2_size) return -1;
-  if (clique1_size < clique2_size) return 1;
   if (p1 > p2) return -1;
   if (p1 < p2) return 1;
   return graph_cmp(clique1, clique2);
@@ -384,12 +382,9 @@ Graph* get_max_clique(Graph *graph) {
   ASSERT(extracted_cliques != NULL, "Could not allocate memory for extracted_cliques.");
   uint32_t *clique_p = (uint32_t*)calloc(num_of_cliques, sizeof(uint32_t));
   ASSERT(clique_p != NULL, "Could not allocate memory for clique_p.");
-  uint32_t *clique_sizes = (uint32_t*)calloc(num_of_cliques, sizeof(uint32_t));
-  ASSERT(clique_sizes != NULL, "Could not allocate memory for clique_sizes.");
 
   for (int i = 0; i < num_of_cliques; ++i) {
     extracted_cliques[i] = extract_clique(graph, cliques[i]);
-    clique_sizes[i] = count_set_bits(cliques[i]);
     destroy_bitset(cliques[i]);
     clique_p[i] = clique_get_max_p(extracted_cliques[i]);
   }
@@ -398,8 +393,8 @@ Graph* get_max_clique(Graph *graph) {
   int max_clique_id = 0;
 
   for (int i = 1; i < num_of_cliques; ++i) {
-    if (p_clique_cmp(extracted_cliques[max_clique_id], clique_sizes[max_clique_id],
-      clique_p[max_clique_id], extracted_cliques[i], clique_sizes[i], clique_p[i]) == 1) {
+    if (p_clique_cmp(extracted_cliques[max_clique_id],
+      clique_p[max_clique_id], extracted_cliques[i], clique_p[i]) == 1) {
       max_clique_id = i;
     }
   }

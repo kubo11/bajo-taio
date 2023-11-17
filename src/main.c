@@ -4,7 +4,7 @@
 #include "graph.h"
 #include "error_handling.h"
 #include "platform_specific.h"
-#include "maximal_common_subgraph.h"
+#include "maximum_common_subgraph.h"
 
 #define USAGE "Usage:"ENDLINE"\tbajo-taio [path]"
 
@@ -25,22 +25,16 @@ int main(int argc, char **argv) {
   if (graphs_number == 2 || argc == 3)
   {
     show_graph(&second_graph, "Second");
-    Graph modular_product = create_modular_product(&first_graph, &second_graph);
-    show_graph(&modular_product, "Modular product");
+    Graph** maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph);
 
-    Graph* clique = get_max_clique(&modular_product);
+    show_graph(maximum_common_subgraphs[0], "First graph subgraph");
+    show_graph(maximum_common_subgraphs[1], "Second graph subgraph");
 
-    if (clique != NULL) {
-      printf("Clique for supplied graph:"ENDLINE);
-      print_edges(clique);
-      destroy_graph(clique);
-    }
-    else {
-      printf("No clique found."ENDLINE);
-    }
+    destroy_graph(maximum_common_subgraphs[0]);
+    destroy_graph(maximum_common_subgraphs[1]);
 
-    destroy_graph(&modular_product);
-    destroy_graph(&second_graph);
+    free(maximum_common_subgraphs);
+
   }
   else {
     GraphSize graphSize = get_graph_size(&first_graph);

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
 
 #define CLIQUES_BUFFER_SIZE 1000000
 
@@ -249,6 +250,131 @@ void store_clique(Bitset *clique, Bitset **cliques, uint32_t *num_of_cliques) {
   }
 }
 
+Graph* find_complement_undirected_graph(Graph* graph) {
+  Graph* complement_graph = (Graph*)calloc(1, sizeof(Graph));
+  initialize_graph(complement_graph, graph -> vertices, 0);
+
+  for (int v = 1; v <= graph -> vertices; v++)
+  {
+    for (int u = v + 1; u <= graph -> vertices; u++)
+    {
+      if (!(graph -> adjacency_matrix[v][u] && graph -> adjacency_matrix[u][v]))
+      {
+        complement_graph -> adjacency_matrix[v][u] = 1;
+        complement_graph -> adjacency_matrix[u][v] = 1;
+      }
+    }  
+  }
+
+  return complement_graph;
+}
+
+Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {
+  int** exclude = (int**)calloc(graph -> vertices + 1, sizeof(int*));
+  for (int i = 1; i <= graph -> vertices; i++)
+  {
+    exclude[i] = (int*)calloc(graph -> vertices + 1, sizeof(int));
+  }
+
+  int** cost = (int**)calloc(graph -> vertices + 1, sizeof(int *));
+  for (int i = 1; i <= graph->vertices; i++)
+  {
+    cost[i] = (int*)calloc(graph -> vertices + 1, sizeof(int));
+  }
+
+  int** previous = (int**)calloc(graph -> vertices + 1, sizeof(int *));
+  for (int i = 1; i <= graph->vertices; i++)
+  {
+    previous[i] = (int*)calloc(graph -> vertices + 1, sizeof(int));
+  }
+
+  for (int u = 1; u <= graph -> vertices; u++)
+  {
+    exclude[u][u] = 1;
+    cost[u][1] = 1;
+
+    for (int v = 1; v < graph -> vertices; v++)
+    {
+      if (graph -> adjacency_matrix[u][v]){
+        exclude[u][v] = 1;
+        cost[u][1]++;
+      }
+    }
+
+    for (int round = 2; round <= graph -> vertices; round++)
+    {
+      cost[u][round] = INT_MAX;
+    }
+  }
+
+  int cost_changed, last_round = 0;
+
+  for (int round = 1; round <= graph -> vertices; round++)
+  {
+      for (int u = 1; u <= graph -> vertices; u++)
+      {
+        for (int v = 1; v <= graph -> vertices; v++)
+        { 
+          if (exclude[u][v] == 0)
+          {
+            if (cost[u][round] < INT_MAX)
+            {
+              int* v_exclude = exclude[u];
+              v_exclude[v] = 1;
+              int v_cost = cost[u][round] + 1;
+
+              for (int j = 1; j <= graph -> vertices; j++)
+              {
+                if (graph -> adjacency_matrix[v][j])
+                {
+                  if (!v_exclude[j])
+                  {
+                    v_exclude[j] = 1;
+                    v_cost++;
+                  }
+                }
+              }
+
+              if (cost[v][round + 1] > v_cost)
+              {
+                previous[v][round + 1] = u;
+                cost[v][round + 1] = v_cost;
+                cost_changed = 1;
+              }
+              
+            }
+          }
+        }
+      }
+
+      if (cost_changed == 0) {
+        last_round = round;
+        break;
+      }
+      cost_changed = 0;
+  }
+  
+  Bitset** clique_candidates = (Bitset**)calloc(graph -> vertices + 1, sizeof(Bitset*));
+  for (int i = 1; i < graph -> vertices; i++)
+  {
+      clique_candidates[i] = create_bitset(graph -> vertices + 1);
+  }
+  
+  for (int u = 1; u <= graph -> vertices; u++)
+  {
+    int t = u;
+    (*num_of_cliques)++;
+    while (t != 0)
+    {
+      printf("%d \n", t);
+      set_bit(clique_candidates[u], t); 
+      t = previous[t][last_round];
+    }
+  }
+  
+  return clique_candidates;
+}
+
 void BronKerbosch(Bitset *R, Bitset *P, Bitset *X, uint32_t vertices, Bitset **adjacency_matrix, Bitset **cliques, uint32_t *num_of_cliques) {
   ASSERT(R != NULL, "R is NULL.");
   ASSERT(P != NULL, "P is NULL.");
@@ -356,28 +482,41 @@ uint8_t p_clique_cmp(Graph *clique1, uint32_t p1, Graph *clique2, uint32_t p2) {
   return graph_cmp(clique1, clique2);
 }
 
-Graph* get_max_clique(Graph *graph) {
+Graph* get_max_clique(Graph *graph, bool aprox) {
   ASSERT(graph != NULL, "graph is NULL");
-  Bitset *R = create_bitset(graph->vertices + 1);
-  Bitset *P = create_bitset(graph->vertices + 1);
-  set_all_bits(P);
-  Bitset *X = create_bitset(graph->vertices + 1);
-  Bitset **bitset_adjacency_matrix = construct_bitset_adjacency_matrix(graph);
-  Bitset **cliques = (Bitset**)calloc(CLIQUES_BUFFER_SIZE, sizeof(Bitset*));
-  ASSERT(cliques != NULL, "Could not allocate memory for cliques.");
+  Bitset **cliques = NULL;
   uint32_t num_of_cliques = 0;
 
-  BronKerbosch(R, P, X, graph->vertices, bitset_adjacency_matrix, cliques, &num_of_cliques);
-  destroy_bitset(R);
-  destroy_bitset(P);
-  destroy_bitset(X);
-  destroy_bitset_adjacency_matrix(bitset_adjacency_matrix, graph->vertices);
-
-  if (num_of_cliques == 0) {
-    free(cliques);
-    return NULL;
+  if (aprox)
+  {
+    Graph *complement_graph = find_complement_undirected_graph(graph);
+    cliques = clique_aprox(complement_graph, &num_of_cliques);
+    destroy_graph(complement_graph);
   }
 
+  else 
+  {
+    cliques = (Bitset **)calloc(CLIQUES_BUFFER_SIZE, sizeof(Bitset *));
+    Bitset *R = create_bitset(graph->vertices + 1);
+    Bitset *P = create_bitset(graph->vertices + 1);
+    set_all_bits(P);
+    Bitset *X = create_bitset(graph->vertices + 1);
+    Bitset **bitset_adjacency_matrix = construct_bitset_adjacency_matrix(graph);
+    ASSERT(cliques != NULL, "Could not allocate memory for cliques.");
+
+    BronKerbosch(R, P, X, graph->vertices, bitset_adjacency_matrix, cliques, &num_of_cliques);
+    destroy_bitset(R);
+    destroy_bitset(P);
+    destroy_bitset(X);
+    destroy_bitset_adjacency_matrix(bitset_adjacency_matrix, graph->vertices);
+
+    if (num_of_cliques == 0)
+    {
+      free(cliques);
+      return NULL;
+    }
+  }
+  
   Graph **extracted_cliques = (Graph**)calloc(num_of_cliques, sizeof(Graph*));
   ASSERT(extracted_cliques != NULL, "Could not allocate memory for extracted_cliques.");
   uint32_t *clique_p = (uint32_t*)calloc(num_of_cliques, sizeof(uint32_t));

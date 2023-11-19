@@ -1,6 +1,7 @@
 #include "graph.h"
 #include "error_handling.h"
 #include "platform_specific.h"
+#include "helpers.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -260,8 +261,9 @@ Graph* find_complement_undirected_graph(Graph* graph) {
     {
       if (!(graph -> adjacency_matrix[v][u] && graph -> adjacency_matrix[u][v]))
       {
-        complement_graph -> adjacency_matrix[v][u] = 1;
-        complement_graph -> adjacency_matrix[u][v] = 1;
+        add_edge(complement_graph, u, v, 1);
+        add_edge(complement_graph, v, u, 1);
+        complement_graph -> edges += 2;
       }
     }  
   }
@@ -269,31 +271,44 @@ Graph* find_complement_undirected_graph(Graph* graph) {
   return complement_graph;
 }
 
-Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {
+Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {  
   int** exclude = (int**)calloc(graph -> vertices + 1, sizeof(int*));
   for (int i = 1; i <= graph -> vertices; i++)
   {
     exclude[i] = (int*)calloc(graph -> vertices + 1, sizeof(int));
   }
+  ASSERT(exclude != NULL, "Could not allocate space for exclude.");
+
+  int** exclude_next = (int**)calloc(graph -> vertices + 1, sizeof(int*));
+  for (int i = 1; i <= graph -> vertices; i++)
+  {
+    exclude_next[i] = (int*)calloc(graph -> vertices + 1, sizeof(int));
+  }
+  ASSERT(exclude_next != NULL, "Could not allocate space for exclude_next.");
 
   int** cost = (int**)calloc(graph -> vertices + 1, sizeof(int *));
   for (int i = 1; i <= graph->vertices; i++)
   {
-    cost[i] = (int*)calloc(graph -> vertices + 1, sizeof(int));
+    cost[i] = (int*)calloc(graph -> vertices + 2, sizeof(int));
   }
+  ASSERT(cost != NULL, "Could not allocate space for cost.");
 
   int** previous = (int**)calloc(graph -> vertices + 1, sizeof(int *));
   for (int i = 1; i <= graph->vertices; i++)
   {
-    previous[i] = (int*)calloc(graph -> vertices + 1, sizeof(int));
+    previous[i] = (int*)calloc(graph -> vertices + 2, sizeof(int));
   }
+  ASSERT(previous != NULL, "Could not allocate space for previous.");
+
+  int* v_exclude = (int*)calloc(graph -> vertices + 1, sizeof(int));
+  ASSERT(v_exclude != NULL, "Could not allocate space for v_exclude.");
 
   for (int u = 1; u <= graph -> vertices; u++)
   {
     exclude[u][u] = 1;
     cost[u][1] = 1;
 
-    for (int v = 1; v < graph -> vertices; v++)
+    for (int v = 1; v <= graph -> vertices; v++)
     {
       if (graph -> adjacency_matrix[u][v]){
         exclude[u][v] = 1;
@@ -301,7 +316,7 @@ Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {
       }
     }
 
-    for (int round = 2; round <= graph -> vertices; round++)
+    for (int round = 2; round <= graph -> vertices + 1; round++)
     {
       cost[u][round] = INT_MAX;
     }
@@ -319,7 +334,7 @@ Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {
           {
             if (cost[u][round] < INT_MAX)
             {
-              int* v_exclude = exclude[u];
+              copy_array(exclude[u], v_exclude, graph -> vertices + 1);
               v_exclude[v] = 1;
               int v_cost = cost[u][round] + 1;
 
@@ -338,6 +353,7 @@ Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {
               if (cost[v][round + 1] > v_cost)
               {
                 previous[v][round + 1] = u;
+                copy_array(v_exclude, exclude_next[v], graph -> vertices + 1);
                 cost[v][round + 1] = v_cost;
                 cost_changed = 1;
               }
@@ -346,7 +362,7 @@ Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {
           }
         }
       }
-
+      copy_2d_array(exclude_next, exclude, graph -> vertices + 1);
       if (cost_changed == 0) {
         last_round = round;
         break;
@@ -354,24 +370,31 @@ Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {
       cost_changed = 0;
   }
   
-  Bitset** clique_candidates = (Bitset**)calloc(graph -> vertices + 1, sizeof(Bitset*));
-  for (int i = 1; i < graph -> vertices; i++)
+  Bitset** clique_candidates = (Bitset**)calloc(graph -> vertices, sizeof(Bitset*));
+  for (int i = 0; i < graph -> vertices; i++)
   {
       clique_candidates[i] = create_bitset(graph -> vertices + 1);
   }
-  
+
   for (int u = 1; u <= graph -> vertices; u++)
   {
     int t = u;
-    (*num_of_cliques)++;
-    while (t != 0)
+    int k = last_round;
+
+    while (k > 0 && t != 0)
     {
-      printf("%d \n", t);
-      set_bit(clique_candidates[u], t); 
-      t = previous[t][last_round];
+      set_bit(clique_candidates[u - 1], t); 
+      t = previous[t][k--];
     }
+    store_clique(clique_candidates[u - 1], clique_candidates, num_of_cliques);
   }
   
+  free_2d_array(exclude, graph -> vertices + 1);
+  free_2d_array(exclude_next, graph -> vertices + 1);
+  free_2d_array(cost, graph -> vertices + 1);
+  free_2d_array(previous, graph -> vertices + 1);
+  free(v_exclude);
+
   return clique_candidates;
 }
 
@@ -493,7 +516,6 @@ Graph* get_max_clique(Graph *graph, bool aprox) {
     cliques = clique_aprox(complement_graph, &num_of_cliques);
     destroy_graph(complement_graph);
   }
-
   else 
   {
     cliques = (Bitset **)calloc(CLIQUES_BUFFER_SIZE, sizeof(Bitset *));
@@ -509,12 +531,12 @@ Graph* get_max_clique(Graph *graph, bool aprox) {
     destroy_bitset(P);
     destroy_bitset(X);
     destroy_bitset_adjacency_matrix(bitset_adjacency_matrix, graph->vertices);
+  }
 
-    if (num_of_cliques == 0)
-    {
-      free(cliques);
-      return NULL;
-    }
+  if (num_of_cliques == 0)
+  {
+    free(cliques);
+    return NULL;
   }
   
   Graph **extracted_cliques = (Graph**)calloc(num_of_cliques, sizeof(Graph*));

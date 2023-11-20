@@ -56,8 +56,8 @@ int main(int argc, char **argv) {
 
     if (approx_clique != NULL) {
       printf("Approximated clique for supplied graph:"ENDLINE);
-      print_edges(clique);
-      destroy_graph(clique);
+      print_edges(approx_clique);
+      destroy_graph(approx_clique);
     }
     else {
       printf("No approximated clique found."ENDLINE);

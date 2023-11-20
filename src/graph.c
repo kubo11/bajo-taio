@@ -273,32 +273,36 @@ Graph* find_complement_undirected_graph(Graph* graph) {
 
 Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {  
   int** exclude = (int**)calloc(graph -> vertices + 1, sizeof(int*));
+  ASSERT(exclude != NULL, "Could not allocate space for exclude.");
   for (int i = 1; i <= graph -> vertices; i++)
   {
     exclude[i] = (int*)calloc(graph -> vertices + 1, sizeof(int));
+    ASSERT(exclude[i] != NULL, "Could not allocate space for exclude[i].");
   }
-  ASSERT(exclude != NULL, "Could not allocate space for exclude.");
 
   int** exclude_next = (int**)calloc(graph -> vertices + 1, sizeof(int*));
+  ASSERT(exclude_next != NULL, "Could not allocate space for exclude_next.");
   for (int i = 1; i <= graph -> vertices; i++)
   {
     exclude_next[i] = (int*)calloc(graph -> vertices + 1, sizeof(int));
+    ASSERT(exclude_next[i] != NULL, "Could not allocate space for exclude_next[i].");
   }
-  ASSERT(exclude_next != NULL, "Could not allocate space for exclude_next.");
 
   int** cost = (int**)calloc(graph -> vertices + 1, sizeof(int *));
+  ASSERT(cost != NULL, "Could not allocate space for cost.");
   for (int i = 1; i <= graph->vertices; i++)
   {
     cost[i] = (int*)calloc(graph -> vertices + 2, sizeof(int));
+    ASSERT(cost[i] != NULL, "Could not allocate space for cost[i].");
   }
-  ASSERT(cost != NULL, "Could not allocate space for cost.");
 
   int** previous = (int**)calloc(graph -> vertices + 1, sizeof(int *));
+  ASSERT(previous != NULL, "Could not allocate space for previous.");
   for (int i = 1; i <= graph->vertices; i++)
   {
     previous[i] = (int*)calloc(graph -> vertices + 2, sizeof(int));
+    ASSERT(previous[i] != NULL, "Could not allocate space for previous[i].");
   }
-  ASSERT(previous != NULL, "Could not allocate space for previous.");
 
   int* v_exclude = (int*)calloc(graph -> vertices + 1, sizeof(int));
   ASSERT(v_exclude != NULL, "Could not allocate space for v_exclude.");
@@ -329,35 +333,28 @@ Bitset** clique_aprox(Graph* graph, uint32_t* num_of_cliques) {
       for (int u = 1; u <= graph -> vertices; u++)
       {
         for (int v = 1; v <= graph -> vertices; v++)
-        { 
-          if (exclude[u][v] == 0)
+        {
+          if (exclude[u][v] == 0 && cost[u][round] < INT_MAX)
           {
-            if (cost[u][round] < INT_MAX)
+            memcpy(v_exclude, exclude[u], (graph->vertices + 1) * sizeof(int));
+            v_exclude[v] = 1;
+            int v_cost = cost[u][round] + 1;
+
+            for (int j = 1; j <= graph -> vertices; j++)
             {
-              copy_array(exclude[u], v_exclude, graph -> vertices + 1);
-              v_exclude[v] = 1;
-              int v_cost = cost[u][round] + 1;
-
-              for (int j = 1; j <= graph -> vertices; j++)
+              if (graph -> adjacency_matrix[v][j] && !v_exclude[j])
               {
-                if (graph -> adjacency_matrix[v][j])
-                {
-                  if (!v_exclude[j])
-                  {
-                    v_exclude[j] = 1;
-                    v_cost++;
-                  }
-                }
+                v_exclude[j] = 1;
+                v_cost++;
               }
+            }
 
-              if (cost[v][round + 1] > v_cost)
-              {
-                previous[v][round + 1] = u;
-                copy_array(v_exclude, exclude_next[v], graph -> vertices + 1);
-                cost[v][round + 1] = v_cost;
-                cost_changed = 1;
-              }
-              
+            if (cost[v][round + 1] > v_cost)
+            {
+              previous[v][round + 1] = u;
+              memcpy(exclude_next[v], v_exclude, (graph -> vertices + 1) * sizeof(int));
+              cost[v][round + 1] = v_cost;
+              cost_changed = 1;
             }
           }
         }

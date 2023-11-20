@@ -4,8 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-void copy_array(int* source, int* destination, int size);
 void copy_2d_array(int** source, int** destination, int size);
 void free_2d_array(int** array, int size);
 

@@ -23,7 +23,9 @@ void initialize_graph(Graph *graph, int vertices, int edges);
 
 void show_graph(const Graph *graph, const char *name);
 
-void set_graphs_number_from_console(int *graphs_number);
+void load_graphs(Graph *first_graph, Graph *second_graph, int graphs_number, bool from_file, char **argv);
+
+void destroy_graphs(Graph *first_graph, Graph *second_graph, int graphs_number);
 
 void load_graphs_from_file(Graph *first_graph, Graph *second_graph, const char *first_path, const char *second_path);
 

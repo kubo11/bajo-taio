@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     
     printf("Graph size: (%d, %d)"ENDLINE, graphSize.vertices_plus_unique_edges, graphSize.vertices_plus_edges);
 
-    Graph* clique = get_max_clique(&first_graph);
+    Graph* clique = get_max_clique(&first_graph, 1);
 
     if (clique != NULL) {
       printf("Clique for supplied graph:"ENDLINE);

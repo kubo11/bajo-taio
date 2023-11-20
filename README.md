@@ -12,7 +12,7 @@ The first argument is one of the following commands:
 - dist - print distance between two graphs
 - cliq - find max clique for graph
 - sub - find maximum common subgraph for two graphs
-Than user can optionally pass paths to files containing graph data (1 path for size and cliq, 2 paths for dist and sub). If user hasn't passed any path they will be asked to pass graph data via console.
+Then user can optionally pass paths to files containing graph data (1 path for size and cliq, 2 paths for dist and sub). If user hasn't passed any path they will be asked to pass graph data via console.
 First user will be asked to pass number of graphs. Program accepts value of one or two.\
 Usage:
 ```

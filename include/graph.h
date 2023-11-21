@@ -69,6 +69,6 @@ uint32_t clique_get_max_p(Graph *clique);
 
 uint8_t p_clique_cmp(Graph *clique1, uint32_t p1, Graph *clique2, uint32_t p2);
 
-Graph* get_max_clique(Graph *graph, bool aprox);
+Graph** get_max_clique(Graph *graph, bool aprox);
 
 #endif // BAJO_TAIO_GRAPH_H

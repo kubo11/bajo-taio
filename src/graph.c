@@ -510,7 +510,7 @@ uint8_t p_clique_cmp(Graph *clique1, uint32_t p1, Graph *clique2, uint32_t p2) {
   return graph_cmp(clique1, clique2);
 }
 
-Graph* get_max_clique(Graph *graph, bool aprox) {
+Graph** get_max_clique(Graph *graph, bool aprox) {
   ASSERT(graph != NULL, "graph is NULL");
   Bitset **cliques = NULL;
   uint32_t num_of_cliques = 0;
@@ -556,34 +556,53 @@ Graph* get_max_clique(Graph *graph, bool aprox) {
   }
   free(cliques);
 
-  int max_clique_id = 0;
+  int max_clique_id = 0, num_of_max_cliques = 0;
+  Bitset *max_clique_ids = create_bitset(num_of_cliques + 1);
+  set_bit(max_clique_ids, 1);
 
   for (int i = 1; i < num_of_cliques; ++i) {
-    if (p_clique_cmp(extracted_cliques[max_clique_id],
-      clique_p[max_clique_id], extracted_cliques[i], clique_p[i]) == 1) {
+    uint8_t cmp_result = p_clique_cmp(extracted_cliques[max_clique_id],
+      clique_p[max_clique_id], extracted_cliques[i], clique_p[i]);
+    if (cmp_result == 1) {
       max_clique_id = i;
+      unset_all_bits(max_clique_ids);
+      set_bit(max_clique_ids, i + 1);
+      num_of_max_cliques = 1;
+    }
+    else if (cmp_result == 0) {
+      set_bit(max_clique_ids, i + 1);
+      num_of_max_cliques++;
     }
   }
 
+  Graph **max_cliques = (Graph**)calloc(num_of_max_cliques + 1, sizeof(Graph*));
+  int iter = 0;
+  
   for (int i = 0; i < num_of_cliques; ++i) {
-    if (i == max_clique_id) continue;
+    if (get_bit(max_clique_ids, i + 1)) {
+      max_cliques[iter++] = extracted_cliques[i];
+      extracted_cliques[i] = NULL;
+      continue;
+    }
     destroy_graph(extracted_cliques[i]);
   }
 
-  Graph *max_clique = (Graph*)calloc(1, sizeof(Graph));
-  memcpy(max_clique, extracted_cliques[max_clique_id], sizeof(Graph));
-  free(extracted_cliques[max_clique_id]);
+  destroy_bitset(max_clique_ids);
 
-  for (int v = 1; v <= max_clique->vertices; ++v) {
-    for (int u = 1; u <= max_clique->vertices; ++u) {
-      if (max_clique->adjacency_matrix[v][u]) {
-        max_clique->adjacency_matrix[v][u] = clique_p[max_clique_id];
+  for (int i = 0; i < num_of_max_cliques; ++i) {
+    for (int v = 1; v <= max_cliques[i]->vertices; ++v) {
+      for (int u = 1; u <= max_cliques[i]->vertices; ++u) {
+        if (max_cliques[i]->adjacency_matrix[v][u]) {
+          max_cliques[i]->adjacency_matrix[v][u] = clique_p[max_clique_id];
+        }
       }
     }
   }
 
+  max_cliques[num_of_max_cliques] = NULL;
+
   free(extracted_cliques);
   free(clique_p);
 
-  return max_clique;
+  return max_cliques;
 }

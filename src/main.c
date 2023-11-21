@@ -45,32 +45,42 @@ int main(int argc, char **argv) {
     TIME_SETUP();
 
     MEASURE(start);
-    Graph* clique = get_max_clique(&first_graph, false);
+    Graph** clique = get_max_clique(&first_graph, false);
     MEASURE(end);
 
     float regular_time;
     DIFF(start, end, regular_time);
 
     if (clique != NULL) {
-      printf("Clique for supplied graph:"ENDLINE);
-      print_edges(clique);
-      destroy_graph(clique);
+      int iter = 0;
+      while (clique[iter] != NULL) {
+        printf("#%d clique for supplied graph:"ENDLINE, iter+1);
+        print_edges(clique[iter]);
+        destroy_graph(clique[iter]);
+        iter++;
+      }
+      free(clique);
     }
     else {
       printf("No clique found."ENDLINE);
     }
 
     MEASURE(start);
-    Graph* approx_clique = get_max_clique(&first_graph, true);
+    Graph** approx_clique = get_max_clique(&first_graph, true);
     MEASURE(end);
 
     float approx_time;
     DIFF(start, end, approx_time);
 
     if (approx_clique != NULL) {
-      printf("Approximated clique for supplied graph:"ENDLINE);
-      print_edges(approx_clique);
-      destroy_graph(approx_clique);
+      int iter = 0;
+      while (approx_clique[iter] != NULL) {
+        printf("#%d approximated clique for supplied graph:"ENDLINE, iter+1);
+        print_edges(approx_clique[iter]);
+        destroy_graph(approx_clique[iter]);
+        iter++;
+      }
+      free(approx_clique);
     }
     else {
       printf("No approximated clique found."ENDLINE);

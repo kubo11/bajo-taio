@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "graph.h"
 #include "error_handling.h"
@@ -41,7 +43,13 @@ int main(int argc, char **argv) {
 
     load_graphs(&first_graph, &second_graph, graphs_number = 1, argc > 2, argv);
 
+    clock_t start, end;
+
+    start = clock();
     Graph* clique = get_max_clique(&first_graph, false);
+    end = clock();
+
+    float regular_time = (float)(end - start) / (float)CLOCKS_PER_SEC;
 
     if (clique != NULL) {
       printf("Clique for supplied graph:"ENDLINE);
@@ -52,7 +60,11 @@ int main(int argc, char **argv) {
       printf("No clique found."ENDLINE);
     }
 
+    start = clock();
     Graph* approx_clique = get_max_clique(&first_graph, true);
+    end = clock();
+
+    float approx_time = (float)(end - start) / (float)CLOCKS_PER_SEC;
 
     if (approx_clique != NULL) {
       printf("Approximated clique for supplied graph:"ENDLINE);
@@ -62,6 +74,9 @@ int main(int argc, char **argv) {
     else {
       printf("No approximated clique found."ENDLINE);
     }
+
+    printf("Time elapsed for regular algorithm: %.21fs"ENDLINE, regular_time);
+    printf("Time elapsed for approximated algorithm: %.21fs"ENDLINE, approx_time);
   }
   else if (!strncmp(MAX_COMMON_SUBGRAPH_CMD, argv[1], strlen(MAX_COMMON_SUBGRAPH_CMD))) {
     ASSERT(argc == 2 || argc == 4, "Max common subgraph command accepts two argument - paths to graph files or no arguments. "USAGE);
@@ -71,15 +86,28 @@ int main(int argc, char **argv) {
     show_graph(&first_graph, "First");
     show_graph(&second_graph, "Second");
 
+    clock_t start, end;
+
+    start = clock();
     Graph** maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph, false);
+    end = clock();
+
+    float regular_time = (float)(end - start) / (float)CLOCKS_PER_SEC;
 
     show_graph(maximum_common_subgraphs[0], "First graph subgraph");
     show_graph(maximum_common_subgraphs[1], "Second graph subgraph");
 
+    start = clock();
     Graph** approx_maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph, true);
+    end = clock();
+
+    float approx_time = (float)(end - start) / (float)CLOCKS_PER_SEC;
 
     show_graph(approx_maximum_common_subgraphs[0], "Approximated first graph subgraph");
     show_graph(approx_maximum_common_subgraphs[1], "Approximated second graph subgraph");
+
+    printf("Time elapsed for regular algorithm: %.21fs"ENDLINE, regular_time);
+    printf("Time elapsed for approximated algorithm: %.21fs"ENDLINE, approx_time);
 
     free(maximum_common_subgraphs);
     free(approx_maximum_common_subgraphs);

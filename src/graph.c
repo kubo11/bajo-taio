@@ -27,9 +27,7 @@ void initialize_graph(Graph *graph, int vertices, int edges) {
 }
 
 void show_graph(const Graph *graph, const char *name) {
-  GraphSize graph_size = get_graph_size(graph);
-  printf("%s graph size: (%d, %d)" ENDLINE, name, graph_size.vertices_plus_unique_edges, graph_size.vertices_plus_edges);
-  printf("Adjacency matrix: \n");
+  printf("%s graph adjacency matrix: \n", name);
 
   for (int i = 1; i < graph -> vertices + 1; i++)
   {
@@ -41,11 +39,21 @@ void show_graph(const Graph *graph, const char *name) {
   }
 }
 
-void set_graphs_number_from_console(int *graphs_number) {
-  printf("Number of graphs: ");
-  scanf("%d", graphs_number);
-  CHECK(ferror(stdin));
-  ASSERT(*graphs_number == 1 || *graphs_number == 2, "Number of graphs should be equal to 1 or 2");
+void load_graphs(Graph *first_graph, Graph *second_graph, int graphs_number, bool from_file, char **argv) {
+  if (from_file) {
+    load_graphs_from_file(first_graph, second_graph, argv[2], argv[3]);
+  }
+  else {
+    load_graphs_from_console(first_graph, second_graph, graphs_number);
+  }
+}
+
+void destroy_graphs(Graph *first_graph, Graph *second_graph, int graphs_number) {
+  ASSERT(graphs_number == 1 || graphs_number == 2, "wrong number of graphs.");
+  destroy_graph(first_graph);
+  if (graphs_number == 2) {
+    destroy_graph(second_graph);
+  }
 }
 
 void load_graphs_from_file(Graph *first_graph, Graph *second_graph, const char *first_path, const char *second_path)

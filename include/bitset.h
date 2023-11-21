@@ -7,8 +7,8 @@
 #define WORD_BITS (__CHAR_BIT__ * sizeof(unsigned int))
 
 typedef uint8_t bool;
-#define true (uint8_t)1;
-#define false (uint8_t)0;
+#define true (uint8_t)1
+#define false (uint8_t)0
 
 typedef struct Bitset{
   size_t size;

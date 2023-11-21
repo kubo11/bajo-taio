@@ -6,12 +6,17 @@ To build project create build directory in project root directory and run **make
 
 ## Running
 
-Running program without any arguments will set it into console mode and user will be asked to supply graphs data via keyboard. 
-First user will be asked to type a number of graphs. Program accepts a value of one or two.\
-Running program with one or two arguments will set it into file mode. Program will attempt to open input files and read graphs data. \
+Running program without any arguments will print usage message. \
+The first argument is one of the following commands:
+- size - print graph's size
+- dist - print distance between two graphs
+- cliq - find max clique for graph
+- sub - find maximum common subgraph for two graphs
+Then user can optionally pass paths to files containing graph data (1 path for size and cliq, 2 paths for dist and sub). If user hasn't passed any path they will be asked to pass graph data via console.
+First user will be asked to pass number of graphs. Program accepts value of one or two.\
 Usage:
 ```
-./bajo-taio [path_to_first_graph] [path_to_second_graph]
+bajo-taio {size|dist|cliq|sub} [path_to_first_graph] [path_to_second_graph]
 ```
 
 ## Data

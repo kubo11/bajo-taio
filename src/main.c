@@ -70,12 +70,19 @@ int main(int argc, char **argv) {
 
     show_graph(&first_graph, "First");
     show_graph(&second_graph, "Second");
-    Graph** maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph);
+
+    Graph** maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph, false);
 
     show_graph(maximum_common_subgraphs[0], "First graph subgraph");
     show_graph(maximum_common_subgraphs[1], "Second graph subgraph");
 
+    Graph** approx_maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph, true);
+
+    show_graph(approx_maximum_common_subgraphs[0], "Approximated first graph subgraph");
+    show_graph(approx_maximum_common_subgraphs[1], "Approximated second graph subgraph");
+
     free(maximum_common_subgraphs);
+    free(approx_maximum_common_subgraphs);
   }
   else {
     fprintf(stderr, "Wrong command. "USAGE);

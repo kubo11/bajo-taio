@@ -44,12 +44,12 @@ uint32_t determine_edges_in_modular_product(int first_graph_edges, int second_gr
     else return 0;
 }
 
-Graph** find_maximum_common_subgraphs(Graph *first_graph, Graph *second_graph){
+Graph** find_maximum_common_subgraphs(Graph *first_graph, Graph *second_graph, bool aprox){
     ASSERT(first_graph != NULL, "first_graph is NULL");
     ASSERT(second_graph != NULL, "second_graph is NULL");
 
     Graph* modular_product = create_modular_product(first_graph, second_graph);
-    Graph* modular_product_clique = get_max_clique(modular_product, 0);
+    Graph* modular_product_clique = get_max_clique(modular_product, aprox);
 
     Graph** maximum_common_subgraphs = create_maximum_common_subgraphs(first_graph, second_graph, modular_product_clique);
 

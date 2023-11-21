@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
 
 #include "graph.h"
 #include "error_handling.h"
@@ -43,13 +41,15 @@ int main(int argc, char **argv) {
 
     load_graphs(&first_graph, &second_graph, graphs_number = 1, argc > 2, argv);
 
-    clock_t start, end;
+    TIME start, end;
+    TIME_SETUP();
 
-    start = clock();
+    MEASURE(start);
     Graph* clique = get_max_clique(&first_graph, false);
-    end = clock();
+    MEASURE(end);
 
-    float regular_time = (float)(end - start) / (float)CLOCKS_PER_SEC;
+    float regular_time;
+    DIFF(start, end, regular_time);
 
     if (clique != NULL) {
       printf("Clique for supplied graph:"ENDLINE);
@@ -60,11 +60,12 @@ int main(int argc, char **argv) {
       printf("No clique found."ENDLINE);
     }
 
-    start = clock();
+    MEASURE(start);
     Graph* approx_clique = get_max_clique(&first_graph, true);
-    end = clock();
+    MEASURE(end);
 
-    float approx_time = (float)(end - start) / (float)CLOCKS_PER_SEC;
+    float approx_time;
+    DIFF(start, end, approx_time);
 
     if (approx_clique != NULL) {
       printf("Approximated clique for supplied graph:"ENDLINE);
@@ -86,22 +87,25 @@ int main(int argc, char **argv) {
     show_graph(&first_graph, "First");
     show_graph(&second_graph, "Second");
 
-    clock_t start, end;
+    TIME start, end;
+    TIME_SETUP();
 
-    start = clock();
+    MEASURE(start);
     Graph** maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph, false);
-    end = clock();
+    MEASURE(end);
 
-    float regular_time = (float)(end - start) / (float)CLOCKS_PER_SEC;
+    float regular_time;
+    DIFF(start, end, regular_time);
 
     show_graph(maximum_common_subgraphs[0], "First graph subgraph");
     show_graph(maximum_common_subgraphs[1], "Second graph subgraph");
 
-    start = clock();
+    MEASURE(start);
     Graph** approx_maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph, true);
-    end = clock();
+    MEASURE(end);
 
-    float approx_time = (float)(end - start) / (float)CLOCKS_PER_SEC;
+    float approx_time;
+    DIFF(start, end, approx_time);
 
     show_graph(approx_maximum_common_subgraphs[0], "Approximated first graph subgraph");
     show_graph(approx_maximum_common_subgraphs[1], "Approximated second graph subgraph");

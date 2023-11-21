@@ -259,7 +259,7 @@ void store_clique(Bitset *clique, Bitset **cliques, uint32_t *num_of_cliques) {
   }
 }
 
-Graph* find_complement_undirected_graph(Graph* graph) {
+Graph* find_complement_undirected_graph(Graph* graph, bool modular_clique) {
   Graph* complement_graph = (Graph*)calloc(1, sizeof(Graph));
   initialize_graph(complement_graph, graph -> vertices, 0);
 
@@ -267,12 +267,25 @@ Graph* find_complement_undirected_graph(Graph* graph) {
   {
     for (int u = v + 1; u <= graph -> vertices; u++)
     {
-      if (!(graph -> adjacency_matrix[v][u] && graph -> adjacency_matrix[u][v]))
+      if (modular_clique)
       {
-        add_edge(complement_graph, u, v, 1);
-        add_edge(complement_graph, v, u, 1);
-        complement_graph -> edges += 2;
+        if (!(graph->adjacency_matrix[v][u] || graph->adjacency_matrix[u][v]))
+        {
+          add_edge(complement_graph, u, v, 1);
+          add_edge(complement_graph, v, u, 1);
+          complement_graph->edges += 2;
+        }
       }
+      else
+      {
+        if (!(graph->adjacency_matrix[v][u] && graph->adjacency_matrix[u][v]))
+        {
+          add_edge(complement_graph, u, v, 1);
+          add_edge(complement_graph, v, u, 1);
+          complement_graph->edges += 2;
+        }
+      }
+      
     }  
   }
 
@@ -441,7 +454,7 @@ void BronKerbosch(Bitset *R, Bitset *P, Bitset *X, uint32_t vertices, Bitset **a
   }
 }
 
-Bitset** construct_bitset_adjacency_matrix(Graph *graph) {
+Bitset** construct_bitset_adjacency_matrix(Graph *graph, bool modular_clique) {
   ASSERT(graph != NULL, "graph is NULL");
   Bitset **bitset_adjacency_matrix = (Bitset**)calloc(graph->vertices + 1, sizeof(Bitset*));
   for (int v = 1; v <= graph->vertices; ++v) {
@@ -449,10 +462,23 @@ Bitset** construct_bitset_adjacency_matrix(Graph *graph) {
   }
   for (int v = 1; v <= graph->vertices; ++v) {
     for (int u = v + 1; u <= graph->vertices; ++u) {
-      if (graph->adjacency_matrix[v][u] && graph->adjacency_matrix[u][v]) {
-        set_bit(bitset_adjacency_matrix[v], u);
-        set_bit(bitset_adjacency_matrix[u], v);
+      if (modular_clique)
+      {
+        if (graph->adjacency_matrix[v][u] || graph->adjacency_matrix[u][v])
+        {
+          set_bit(bitset_adjacency_matrix[v], u);
+          set_bit(bitset_adjacency_matrix[u], v);
+        }
       }
+      else
+      {
+        if (graph->adjacency_matrix[v][u] && graph->adjacency_matrix[u][v])
+        {
+          set_bit(bitset_adjacency_matrix[v], u);
+          set_bit(bitset_adjacency_matrix[u], v);
+        }
+      }
+      
     }
   }
   return bitset_adjacency_matrix;
@@ -510,14 +536,15 @@ uint8_t p_clique_cmp(Graph *clique1, uint32_t p1, Graph *clique2, uint32_t p2) {
   return graph_cmp(clique1, clique2);
 }
 
-Graph** get_max_clique(Graph *graph, bool aprox) {
+Graph** get_max_clique(Graph *graph, int *max_clique_number, bool aprox, bool modular_clique)
+{
   ASSERT(graph != NULL, "graph is NULL");
   Bitset **cliques = NULL;
   uint32_t num_of_cliques = 0;
 
   if (aprox)
   {
-    Graph *complement_graph = find_complement_undirected_graph(graph);
+    Graph *complement_graph = find_complement_undirected_graph(graph, modular_clique);
     cliques = clique_aprox(complement_graph, &num_of_cliques);
     destroy_graph(complement_graph);
   }
@@ -528,7 +555,7 @@ Graph** get_max_clique(Graph *graph, bool aprox) {
     Bitset *P = create_bitset(graph->vertices + 1);
     set_all_bits(P);
     Bitset *X = create_bitset(graph->vertices + 1);
-    Bitset **bitset_adjacency_matrix = construct_bitset_adjacency_matrix(graph);
+    Bitset **bitset_adjacency_matrix = construct_bitset_adjacency_matrix(graph, modular_clique);
     ASSERT(cliques != NULL, "Could not allocate memory for cliques.");
 
     BronKerbosch(R, P, X, graph->vertices, bitset_adjacency_matrix, cliques, &num_of_cliques);
@@ -556,7 +583,7 @@ Graph** get_max_clique(Graph *graph, bool aprox) {
   }
   free(cliques);
 
-  int max_clique_id = 0, num_of_max_cliques = 0;
+  int max_clique_id = 0, num_of_max_cliques = 1;
   Bitset *max_clique_ids = create_bitset(num_of_cliques + 1);
   set_bit(max_clique_ids, 1);
 
@@ -577,6 +604,8 @@ Graph** get_max_clique(Graph *graph, bool aprox) {
 
   Graph **max_cliques = (Graph**)calloc(num_of_max_cliques + 1, sizeof(Graph*));
   int iter = 0;
+
+  *max_clique_number = num_of_max_cliques;
   
   for (int i = 0; i < num_of_cliques; ++i) {
     if (get_bit(max_clique_ids, i + 1)) {

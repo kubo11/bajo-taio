@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
     float distance = graph_distance(&first_graph, &second_graph);
 
-    printf("Distance betweend first and second graph: %f", distance);
+    printf("Distance between first and second graph: %f", distance);
   }
   else if (!strncmp(CLIQUE_CMD, argv[1], strlen(CLIQUE_CMD))) {
     ASSERT(argc == 2 || argc == 3, "Clique command accepts only one argument - path to graph file or no arguments. "USAGE);
@@ -45,7 +45,8 @@ int main(int argc, char **argv) {
     TIME_SETUP();
 
     MEASURE(start);
-    Graph** clique = get_max_clique(&first_graph, false);
+    int max_clique_number = 0;
+    Graph** clique = get_max_clique(&first_graph, &max_clique_number, false, false);
     MEASURE(end);
 
     float regular_time;
@@ -66,7 +67,7 @@ int main(int argc, char **argv) {
     }
 
     MEASURE(start);
-    Graph** approx_clique = get_max_clique(&first_graph, true);
+    Graph** approx_clique = get_max_clique(&first_graph, &max_clique_number, true, false);
     MEASURE(end);
 
     float approx_time;

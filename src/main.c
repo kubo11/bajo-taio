@@ -17,36 +17,55 @@ int main(int argc, char **argv) {
   ASSERT(argc <= 4, "Too many arguments. "USAGE);
 
   int graphs_number;
-  Graph first_graph, second_graph;
+  Graph **graphs;
 
   if (!strncmp(SIZE_CMD, argv[1], strlen(SIZE_CMD))) {
     ASSERT(argc == 2 || argc == 3, "Size command accepts only one argument - path to graph file or no arguments. "USAGE);
 
-    load_graphs(&first_graph, &second_graph, graphs_number = 1, argc > 2, argv);
+    if (argc > 2) {
+      graphs_number = 1;
+      load_graphs_from_file(&graphs, &graphs_number, &(argv[2]));
+    }
+    else {
+      load_graphs_from_console(&graphs, &graphs_number);
+    }
 
-    GraphSize graphSize = get_graph_size(&first_graph);
+    GraphSize graphSize = get_graph_size(graphs[0]);
     printf("Graph size: (%d, %d)"ENDLINE, graphSize.vertices_plus_unique_edges, graphSize.vertices_plus_edges);
   }
   else if (!strncmp(DISTANCE_CMD, argv[1], strlen(DISTANCE_CMD))) {
-    ASSERT(argc == 2 || argc == 4, "Compare command accepts two argument - paths to graph files or no arguments. "USAGE);
+    ASSERT(argc >= 2 && argc <= 4, "Compare command accepts one or two paths to graph files or no arguments. "USAGE);
 
-    load_graphs(&first_graph, &second_graph, graphs_number = 2, argc > 2, argv);
+    if (argc > 2) {
+      if (argc == 4) graphs_number = 2;
+      load_graphs_from_file(&graphs, &graphs_number, &(argv[2]));
+    }
+    else {
+      load_graphs_from_console(&graphs, &graphs_number);
+    }
+    ASSERT(graphs_number == 2, "Wrong number of graphs.");
 
-    float distance = graph_distance(&first_graph, &second_graph);
+    float distance = graph_distance(graphs[0], graphs[1]);
 
     printf("Distance between first and second graph: %f", distance);
   }
   else if (!strncmp(CLIQUE_CMD, argv[1], strlen(CLIQUE_CMD))) {
     ASSERT(argc == 2 || argc == 3, "Clique command accepts only one argument - path to graph file or no arguments. "USAGE);
 
-    load_graphs(&first_graph, &second_graph, graphs_number = 1, argc > 2, argv);
+    if (argc > 2) {
+      graphs_number = 1;
+      load_graphs_from_file(&graphs, &graphs_number, &(argv[2]));
+    }
+    else {
+      load_graphs_from_console(&graphs, &graphs_number);
+    }
 
     TIME start, end;
     TIME_SETUP();
 
     MEASURE(start);
     int max_clique_number = 0;
-    Graph** clique = get_max_clique(&first_graph, &max_clique_number, false, false);
+    Graph** clique = get_max_clique(graphs[0], &max_clique_number, false, false);
     MEASURE(end);
 
     float regular_time;
@@ -67,7 +86,7 @@ int main(int argc, char **argv) {
     }
 
     MEASURE(start);
-    Graph** approx_clique = get_max_clique(&first_graph, &max_clique_number, true, false);
+    Graph** approx_clique = get_max_clique(graphs[0], &max_clique_number, true, false);
     MEASURE(end);
 
     float approx_time;
@@ -91,18 +110,25 @@ int main(int argc, char **argv) {
     printf("Time elapsed for approximated algorithm: %.21fs"ENDLINE, approx_time);
   }
   else if (!strncmp(MAX_COMMON_SUBGRAPH_CMD, argv[1], strlen(MAX_COMMON_SUBGRAPH_CMD))) {
-    ASSERT(argc == 2 || argc == 4, "Max common subgraph command accepts two argument - paths to graph files or no arguments. "USAGE);
+    ASSERT(argc >= 2 || argc <= 4, "Max common subgraph command accepts one or two paths to graph files or no arguments. "USAGE);
 
-    load_graphs(&first_graph, &second_graph, graphs_number = 2, argc > 2, argv);
+    if (argc > 2) {
+      if (argc == 4) graphs_number = 2;
+      load_graphs_from_file(&graphs, &graphs_number, &(argv[2]));
+    }
+    else {
+      load_graphs_from_console(&graphs, &graphs_number);
+    }
+    ASSERT(graphs_number == 2, "Wrong number of graphs.");
 
-    show_graph(&first_graph, "First");
-    show_graph(&second_graph, "Second");
+    show_graph(graphs[0], "First");
+    show_graph(graphs[1], "Second");
 
     TIME start, end;
     TIME_SETUP();
 
     MEASURE(start);
-    Graph** maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph, false);
+    Graph** maximum_common_subgraphs = find_maximum_common_subgraphs(graphs[0], graphs[1], false);
     MEASURE(end);
 
     float regular_time;
@@ -112,7 +138,7 @@ int main(int argc, char **argv) {
     show_graph(maximum_common_subgraphs[1], "Second graph subgraph");
 
     MEASURE(start);
-    Graph** approx_maximum_common_subgraphs = find_maximum_common_subgraphs(&first_graph, &second_graph, true);
+    Graph** approx_maximum_common_subgraphs = find_maximum_common_subgraphs(graphs[0], graphs[1], true);
     MEASURE(end);
 
     float approx_time;
@@ -132,7 +158,11 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  destroy_graphs(&first_graph, &second_graph, graphs_number);
+  for (int i = 0; i < graphs_number; ++i) {
+    destroy_graph(graphs[i]);
+    graphs[i] = NULL;
+  }
+  free(graphs);
 
   return EXIT_SUCCESS;
 }

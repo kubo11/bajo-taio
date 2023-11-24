@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   ASSERT(argc >= 2, "No subcommand selected. "USAGE);
   ASSERT(argc <= 4, "Too many arguments. "USAGE);
 
-  int graphs_number;
+  int graphs_number = 0;
   Graph **graphs;
 
   if (!strncmp(SIZE_CMD, argv[1], strlen(SIZE_CMD))) {

@@ -126,8 +126,8 @@ void add_edge(Graph *graph, uint32_t beg, uint32_t end, uint32_t edges_count)
   ASSERT(beg != end, "self-loops are not allowed");
   if (!graph->adjacency_matrix[beg][end] && !graph->adjacency_matrix[end][beg]) graph->unique_edges++;
   graph->adjacency_matrix[beg][end] += edges_count;
-  graph->out_degrees[beg]++;
-  graph->in_degrees[end]++;
+  graph->out_degrees[beg]+=edges_count;
+  graph->in_degrees[end]+=edges_count;
   graph->edges += edges_count;
 }
 

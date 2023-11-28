@@ -102,6 +102,9 @@ Graph** create_maximum_common_subgraphs(Graph* first_graph, Graph* second_graph,
             max_index = i;
             max_vertices = count_set_bits(first_graph_bitset);
         }
+
+        unset_all_bits(first_graph_bitset);
+        unset_all_bits(second_graph_bitset);
     }
 
     for (int u = 1; u <= modular_product_clique[max_index]->vertices; u++)

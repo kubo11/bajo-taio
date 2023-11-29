@@ -10,9 +10,9 @@
 
 #define CLIQUES_BUFFER_SIZE 1000000
 
-void initialize_graph(Graph *graph, int vertices, int edges) {
+void initialize_graph(Graph *graph, int vertices) {
   graph->vertices = vertices;
-  graph->edges = edges;
+  graph->edges = 0;
   graph->unique_edges = 0;
 
   graph->out_degrees = calloc(vertices + 1, sizeof(uint32_t));
@@ -39,79 +39,73 @@ void show_graph(const Graph *graph, const char *name) {
   }
 }
 
-void load_graphs(Graph *first_graph, Graph *second_graph, int graphs_number, bool from_file, char **argv) {
-  if (from_file) {
-    load_graphs_from_file(first_graph, second_graph, argv[2], argv[3]);
+bool is_single_graph(FILE *in) {
+    int tmp;
+    bool res;
+    fscanf(in, "%d", &tmp);
+    fscanf(in, "%d", &tmp);
+    if (fgetc(in) == ' ') {
+        res = true;
+    }
+    else {
+        res = false;
+    }
+    fseek(in, 0, SEEK_SET);
+    return res;
+}
+
+void load_graphs(Graph **graphs, int graphs_number, FILE *in, FILE *out) {
+  for (int i = 0; i < graphs_number; ++i) {
+    graphs[i] = (Graph*)calloc(1, sizeof(Graph));
+    if (out) fprintf(out, "Number of vertices in %d. graph: ", i+1);
+    int vertices, edges;
+    fscanf(in, "%d", &vertices);
+    initialize_graph(graphs[i], vertices);
+    for (int j = 1; j <= vertices; ++j) {
+      int k = 1;
+      do {
+        fscanf(in, "%d", &edges);
+        if (edges) add_edge(graphs[i], j, k, edges);
+        k++;
+      } while(fgetc(in) != '\n' && k <= vertices);
+    }
+  }
+}
+
+void load_graphs_from_file(Graph ***graphs, int *graphs_number, char **paths) {
+  if (!*graphs_number) {
+    FILE *in;
+    ASSERT(NULL != (in = fopen(paths[0], "r")), "file doesn\'t exist");
+    if (!is_single_graph(in)) {
+      fscanf(in, "%d", graphs_number);
+    }
+    else {
+      *graphs_number = 1;
+    }
+    *graphs = (Graph**)calloc(*graphs_number, sizeof(Graph*));
+    load_graphs(*graphs, *graphs_number, in, NULL);
+    fclose(in);
   }
   else {
-    load_graphs_from_console(first_graph, second_graph, graphs_number);
-  }
-}
-
-void destroy_graphs(Graph *first_graph, Graph *second_graph, int graphs_number) {
-  ASSERT(graphs_number == 1 || graphs_number == 2, "wrong number of graphs.");
-  destroy_graph(first_graph);
-  if (graphs_number == 2) {
-    destroy_graph(second_graph);
-  }
-}
-
-void load_graphs_from_file(Graph *first_graph, Graph *second_graph, const char *first_path, const char *second_path)
-{
-  int graphs_number = second_path == NULL ? 1 : 2;
-
-  for (int i = 0; i < graphs_number; ++i){
-    ASSERT((i == 0 ? first_graph : second_graph) != NULL, "graph is NULL");
-    FILE *file;
-    ASSERT(NULL != (file = fopen(i == 0 ? first_path : second_path, "r")), "file doesn\'t exist");
-
-    int vertices, edges, beg, end;
-
-    fscanf(file, "%d", &vertices);
-    CHECK(ferror(file));
-    ASSERT(vertices > 0, "number of vertices should be greater than 0");
-    fscanf(file, "%d", &edges);
-    CHECK(ferror(file));
-    ASSERT(edges >= 0, "number of edges should be greater or equal than 0");
-
-    initialize_graph(i == 0 ? first_graph : second_graph, vertices, edges);
-
-    for (int j = 0; j < edges; ++j)
-    {
-      fscanf(file, "%d %d", &beg, &end);
-      CHECK(ferror(file));
-      add_edge(i == 0 ? first_graph : second_graph, beg, end, 1);
+    *graphs = (Graph**)calloc(*graphs_number, sizeof(Graph*));
+    for (int i = 0; i < *graphs_number; ++i) {
+      FILE *in;
+      ASSERT(NULL != (in = fopen(paths[i], "r")), "file doesn\'t exist");
+      if (!is_single_graph(in)) {
+        int tmp;
+        fscanf(in, "%d", &tmp);
+      }
+      load_graphs(&((*graphs)[i]), 1, in, NULL);
+      fclose(in);
     }
   }
 }
 
-void load_graphs_from_console(Graph *first_graph, Graph *second_graph, int graphs_number) {
-  ASSERT(first_graph != NULL, "First graph is NULL");
-  ASSERT(second_graph != NULL, "Second graph is NULL");
-
-  int vertices, edges, beg, end;
-
-  for (int i = 0; i < graphs_number; ++i)
-  {
-    printf("Number of vertices in %d. graph: ", i+1);
-    scanf("%d", &vertices);
-    CHECK(ferror(stdin));
-    ASSERT(vertices > 0, "number of vertices should be greater than 0");
-    printf("Number of edges in %d. graph: ", i+1);
-    scanf("%d", &edges);
-    CHECK(ferror(stdin));
-    ASSERT(edges >= 0, "number of edges should be greater or equal than 0");
-    printf("List of edges:" ENDLINE);
-
-    initialize_graph(i == 0 ? first_graph : second_graph, vertices, edges);
-
-    for (int j = 0; j < edges; ++j)
-    {
-      scanf("%d %d", &beg, &end);
-      CHECK(ferror(stdin));
-      add_edge(i == 0 ? first_graph : second_graph, beg, end, 1);
-    }
-  }
+void load_graphs_from_console(Graph ***graphs, int *graphs_number) {
+  printf("Number of graphs: ");
+  scanf("%d", graphs_number);
+  *graphs = (Graph**)calloc(*graphs_number, sizeof(Graph*));
+  load_graphs(*graphs, *graphs_number, stdin, stdout);
 }
 
 void destroy_graph(Graph *graph) {
@@ -132,8 +126,9 @@ void add_edge(Graph *graph, uint32_t beg, uint32_t end, uint32_t edges_count)
   ASSERT(beg != end, "self-loops are not allowed");
   if (!graph->adjacency_matrix[beg][end] && !graph->adjacency_matrix[end][beg]) graph->unique_edges++;
   graph->adjacency_matrix[beg][end] += edges_count;
-  graph->out_degrees[beg]++;
-  graph->in_degrees[end]++;
+  graph->out_degrees[beg]+=edges_count;
+  graph->in_degrees[end]+=edges_count;
+  graph->edges += edges_count;
 }
 
 void remove_edge(Graph *graph, uint32_t beg, uint32_t end) {
@@ -145,6 +140,7 @@ void remove_edge(Graph *graph, uint32_t beg, uint32_t end) {
   if (!graph->adjacency_matrix[beg][end] && !graph->adjacency_matrix[end][beg]) graph->unique_edges--;
   graph->out_degrees[beg]--;
   graph->in_degrees[end]--;
+  graph->edges--;
 }
 
 GraphSize get_graph_size(const Graph *graph) {
@@ -261,7 +257,7 @@ void store_clique(Bitset *clique, Bitset **cliques, uint32_t *num_of_cliques) {
 
 Graph* find_complement_undirected_graph(Graph* graph, bool modular_clique) {
   Graph* complement_graph = (Graph*)calloc(1, sizeof(Graph));
-  initialize_graph(complement_graph, graph -> vertices, 0);
+  initialize_graph(complement_graph, graph -> vertices);
 
   for (int v = 1; v <= graph -> vertices; v++)
   {
@@ -273,7 +269,6 @@ Graph* find_complement_undirected_graph(Graph* graph, bool modular_clique) {
         {
           add_edge(complement_graph, u, v, 1);
           add_edge(complement_graph, v, u, 1);
-          complement_graph->edges += 2;
         }
       }
       else
@@ -282,7 +277,6 @@ Graph* find_complement_undirected_graph(Graph* graph, bool modular_clique) {
         {
           add_edge(complement_graph, u, v, 1);
           add_edge(complement_graph, v, u, 1);
-          complement_graph->edges += 2;
         }
       }
       
@@ -495,21 +489,16 @@ Graph* extract_clique(Graph *graph, Bitset *clique) {
   ASSERT(graph != NULL, "graph is NULL");
   ASSERT(graph != NULL, "clique is NULL");
   Graph *extracted_clique = (Graph*)calloc(1, sizeof(Graph));
-  initialize_graph(extracted_clique, graph->vertices, 0);
+  initialize_graph(extracted_clique, graph->vertices);
   for (int v = 1; v <= graph->vertices; ++v) {
     if (!get_bit(clique, v)) continue;
     for (int u = v + 1; u <= graph->vertices; ++u) {
       if (!get_bit(clique, u)) continue;
       if (graph->adjacency_matrix[v][u]) {
-        extracted_clique->adjacency_matrix[v][u] = graph->adjacency_matrix[v][u];
-        extracted_clique->edges += graph->adjacency_matrix[v][u];
+        add_edge(extracted_clique, v, u, graph->adjacency_matrix[v][u]);
       }
       if (graph->adjacency_matrix[u][v]) {
-        extracted_clique->adjacency_matrix[u][v] = graph->adjacency_matrix[u][v];
-        extracted_clique->edges += graph->adjacency_matrix[u][v];
-      }
-      if (extracted_clique->adjacency_matrix[v][u] || extracted_clique->adjacency_matrix[u][v]) {
-        extracted_clique->unique_edges++;
+        add_edge(extracted_clique, u, v, graph->adjacency_matrix[u][v]);
       }
     }
   }

@@ -19,17 +19,17 @@ typedef struct GraphSize {
   uint32_t vertices_plus_edges;
 } GraphSize;
 
-void initialize_graph(Graph *graph, int vertices, int edges);
+void initialize_graph(Graph *graph, int vertices);
 
 void show_graph(const Graph *graph, const char *name);
 
-void load_graphs(Graph *first_graph, Graph *second_graph, int graphs_number, bool from_file, char **argv);
+bool is_single_graph(FILE *in);
 
-void destroy_graphs(Graph *first_graph, Graph *second_graph, int graphs_number);
+void load_graphs(Graph **graphs, int graphs_number, FILE *in, FILE *out);
 
-void load_graphs_from_file(Graph *first_graph, Graph *second_graph, const char *first_path, const char *second_path);
+void load_graphs_from_file(Graph ***graphs, int *graphs_number, char **paths);
 
-void load_graphs_from_console(Graph *first_graph, Graph *second_graph, int graphs_number);
+void load_graphs_from_console(Graph ***graphs, int *graphs_number);
 
 void destroy_graph(Graph *graph);
 

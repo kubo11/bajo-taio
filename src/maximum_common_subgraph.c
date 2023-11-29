@@ -3,12 +3,11 @@
 Graph* create_modular_product(Graph *first_graph, Graph *second_graph) 
 {
     int vertices = first_graph -> vertices * second_graph -> vertices;
-    int edges = 0;
     int first_graph_vertex_start, first_graph_vertex_end = 0;
     int second_graph_vertex_start, second_graph_vertex_end = 0;
 
     Graph *modular_product = (Graph *)calloc(1, sizeof(Graph));
-    initialize_graph(modular_product, vertices, 0);
+    initialize_graph(modular_product, vertices);
 
     for (int i = 0; i < vertices; i++)
     {
@@ -23,11 +22,9 @@ Graph* create_modular_product(Graph *first_graph, Graph *second_graph)
             int modular_product_edges = determine_edges_in_modular_product(first_graph_edges, second_graph_edges);
 
             if (modular_product_edges != 0) add_edge(modular_product, i + 1, j + 1, modular_product_edges);
-            edges += modular_product -> adjacency_matrix[i + 1][j + 1];
         }
     }
     
-    modular_product -> edges = edges;
     return modular_product;
 }
 
@@ -70,8 +67,8 @@ Graph** create_maximum_common_subgraphs(Graph* first_graph, Graph* second_graph,
     maximum_common_subgraphs[0] = (Graph *)calloc(1, sizeof(Graph));
     maximum_common_subgraphs[1] = (Graph *)calloc(1, sizeof(Graph));
 
-    initialize_graph(maximum_common_subgraphs[0], first_graph->vertices, 0);
-    initialize_graph(maximum_common_subgraphs[1], second_graph->vertices, 0);
+    initialize_graph(maximum_common_subgraphs[0], first_graph->vertices);
+    initialize_graph(maximum_common_subgraphs[1], second_graph->vertices);
 
     Bitset *first_graph_bitset = create_bitset(first_graph->vertices + 1);
     Bitset *second_graph_bitset = create_bitset(second_graph->vertices + 1);
@@ -105,6 +102,9 @@ Graph** create_maximum_common_subgraphs(Graph* first_graph, Graph* second_graph,
             max_index = i;
             max_vertices = count_set_bits(first_graph_bitset);
         }
+
+        unset_all_bits(first_graph_bitset);
+        unset_all_bits(second_graph_bitset);
     }
 
     for (int u = 1; u <= modular_product_clique[max_index]->vertices; u++)
@@ -125,9 +125,6 @@ Graph** create_maximum_common_subgraphs(Graph* first_graph, Graph* second_graph,
 
                 add_edge(maximum_common_subgraphs[0], first_graph_vertex_start, first_graph_vertex_end, edges_number);
                 add_edge(maximum_common_subgraphs[1], second_graph_vertex_start, second_graph_vertex_end, edges_number);
-
-                maximum_common_subgraphs[0]->edges += edges_number;
-                maximum_common_subgraphs[1]->edges += edges_number;
             }
         }
         }

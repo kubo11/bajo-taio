@@ -18,7 +18,7 @@ import numpy as np
 import sys
 
 
-def _generate_edges(M, n_edges, unique):
+def generate_edges(M, n_edges, unique):
     n_vertices = M.shape[0]
 
     if unique:

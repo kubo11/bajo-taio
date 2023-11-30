@@ -22,9 +22,13 @@ def generate_edges(M, n_edges, unique):
     n_vertices = M.shape[0]
 
     if unique:
-        w = np.ones((n_vertices, n_vertices)) - np.eye(n_vertices)
+        w = np.triu(np.ones(n_vertices)) - np.eye(n_vertices)
+        for beg, end in zip(*np.where(w == 1)):
+            if np.random.random() < 0.5:
+                w[beg, end] = 0
+                w[end, beg] = 1
     else:
-        w = M
+        w = np.clip(M + M.T, 0, 1)
     w = w.flatten()
     p = w / np.sum(w)
     idx = np.random.choice(np.arange(n_vertices * n_vertices), size=n_edges, replace=not unique, p=p)

@@ -38,12 +38,11 @@ def generate_edges(M, n_edges, unique):
     return E
 
 
-def generate_example(n_vertices, n_edges, n_unique_edges = None, save_path = None):
+def generate_example(n_vertices, n_edges, n_unique_edges, save_path = None):
     assert(n_unique_edges is None or n_unique_edges <= n_edges)
     M = np.zeros(shape=(n_vertices, n_vertices))
-    if n_unique_edges is not None:
-        M += generate_edges(M, n_unique_edges, True)
-        n_edges -= n_unique_edges
+    M += generate_edges(M, n_unique_edges, True)
+    n_edges -= n_unique_edges
     M += generate_edges(M, n_edges, False)
     M = M.astype(np.int32)
 
